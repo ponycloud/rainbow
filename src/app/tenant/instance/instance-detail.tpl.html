@@ -1,0 +1,67 @@
+<h1></a>{{instance.desired.name}}</h1>
+
+
+<ul class="nav nav-tabs">
+	<li><a href="#home" data-toggle="tab">Info</a></li>
+	<li><a href="#network" data-toggle="tab">Network</a></li>
+	<li><a href="#storage" data-toggle="tab">Storage</a></li>
+</ul>
+
+
+<div class="tab-content">
+	<div class="tab-pane active" id="home">
+		<dl class="dl-horizontal">
+			<dt>uuid</dt>
+			<dd>{{instance.desired.uuid}}</dd>
+
+			<dt>VCPU</dt>
+			<dd>{{instance.desired.vcpu}}</dd>
+
+			<dt>RCPU</dt>
+			<dd>{{instance.desired.rcpu}}</dd>
+
+			<dt>Memory</dt>
+			<dd>{{instance.desired.mem}}</dd>
+
+			<dt>Boot</dt>
+			<dd>{{instance.desired.boot}}</dd>
+		</dl>
+
+	</div>
+	<div class="tab-pane" id="network">
+		<table class="table table-striped">
+			<thead>
+			<tr>
+				<th>uuid</th>
+				<th>hw address</th>
+			</tr>
+			</thead>
+			<tr ng-repeat="vnic in vnics.items">
+				<td>{{vnic.desired.uuid}}</td>
+				<td>{{vnic.desired.macaddr}}</td>
+			</tr>
+
+		</table>
+
+
+	</div>
+	<div class="tab-pane" id="storage">
+		<table class="table table-striped">
+			<thead>
+			<tr>
+				<th>uuid</th>
+				<th>size</th>
+			</tr>
+			</thead>
+			<tr ng-repeat="vdisk in vdisks.items">
+				<td>{{vdisk.desired.uuid}}</td>
+				<td>{{vdisk.desired.size}} Mb</td>
+			</tr>
+
+		</table>
+	</div>
+</div>
+
+
+		
+

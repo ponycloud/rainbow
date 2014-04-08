@@ -1,0 +1,14 @@
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>UUID</th>
+        <th colspan="2">Administration</th>
+    </tr>
+    </thead>
+    <tr ng-repeat="host in hosts" ng-animate=" 'animate' ">
+        <td>{{host.desired.uuid}}</td>
+        <td><a href="#/host/{{host.desired.uuid}}/network">Network</a></td>
+        <td>Storage</td>
+    </tr>
+</table>
+

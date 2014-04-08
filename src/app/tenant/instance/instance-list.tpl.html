@@ -1,0 +1,34 @@
+<style>
+/*
+	.animate {
+		opacity: 0.5;
+	}
+*/
+
+</style>
+
+<h1>Instances</h1>
+		
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th></th>
+			<th>Name</th>
+			<th>CPU</th>
+			<th>Memory</th>
+			<th>State</th>
+		</tr>
+	</thead>
+	<tr ng-repeat="instance in instances">
+		<td></td>
+		<td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
+		<td>{{instance.desired.vcpu}}</td>
+		<td><span class="label label">{{instance.desired.mem}}</span> <span class="animate">&raquo;</span> <span class="label label-info">2048</span> Mb</td>
+		<td>
+			<span class="label label-success">{{instance.desired.state}}</span> &raquo; <span class="label label-inverse">stopped</span>
+		</td>
+	</tr>
+
+
+
+</table>

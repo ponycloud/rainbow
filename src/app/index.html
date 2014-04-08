@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+	<!-- TODO changing title -->
+    <title>PonyCloud </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--
+	<script src="js/libs.js"></script>
+	<script src="js/app-parts.js"></script>
+	<script src="js/rainbow.js"></script>
+-->
+
+	<script src="../lib/jquery-1.10.1.min.js"></script>
+	<script src="../lib/autobahn.min.js"></script>
+	<script src="../lib/angular.1.1.5.min.js"></script>
+	<script src="../lib/angular-strap.min.js"></script>
+	<script src="../lib/ui-bootstrap-tpls-0.4.0.min.js"></script>
+	<script src="../lib/i18next-1.6.3.js"></script>
+	<script src="../lib/jquery-ui-1.9.1.custom.min.js"></script>
+	
+	<script src="../common/providers/i18next.js"></script>
+	<script src="../common/filters/i18next.js"></script>
+	<script src="../common/directives/i18next.js"></script>
+
+	<script src="../common/api.js"></script>
+
+	<script src="../common/directives/network.js"></script>
+	<script src="../common/directives/state.js"></script>
+
+	<script src="../common/services/auth.js"></script>
+	<script src="../common/services.js"></script>
+	<script src="../common/services/HostNetwork.js"></script>
+
+	<script src="../common/services/data-container.js"></script>
+	<script src="../common/rainbow-resource.js"></script>
+	<script src="../common/controllers/main.js"></script>
+
+	<script src="../app/tenant/instance/instance.js"></script>
+	<script src="../app/tenant/cluster/cluster.js"></script>
+	<script src="../app/login/login.js"></script>
+	<script src="../app/platform/host/network/network.js"></script>
+	<script src="../app/platform/tenant/tenant.js"></script>
+	<script src="../app/platform/host/host.js"></script>
+	<script src="../app/tenant/image/image.js"></script>
+	<script src="../app/tenant/tenant.js"></script>
+
+	<script src="../app/app.js"></script>
+
+    <link href="../assets/css/bootstrap.custom.min.css" rel="stylesheet">
+    <!-- <link href="./css/smoothness/jquery-ui-1.9.1.custom.min.css" rel="stylesheet"> -->
+    <link href="../assets/css/ponycloud.css" rel="stylesheet">
+    <link href="../assets/css/font-awesome.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap-responsive.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="./js/html5.js"></script>
+	<![endif]-->
+
+</head>
+<body ng-controller="MainCtrl">
+<div ng-include="layoutPartial()"></div>
+
+<script src="../lib/bootstrap.min.js"></script>
+
+</body>
+</html>

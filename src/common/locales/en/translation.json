@@ -1,0 +1,34 @@
+{
+    "general": {},
+    "host": {
+        "network": {
+            "roles": "Network Roles",
+            "bond": {
+                "settings": "Bond Settings",
+                "mode": {
+                    "title": "Mode",
+                    "8023ad": "802.3ad",
+                    "active-backup": "Active + Backup"
+                },
+                "xmit-hash-policy": {
+                    "title": "Xmit hash policy",
+                    "layer2": "Layer 2",
+                    "layer23": "Layer 2+3",
+                    "layer34": "Layer 3+4"
+                },
+                "lacp-rate": {
+                    "title": "Lacp rate",
+                    "fast": "Fast",
+                    "slow": "Slow"
+                },
+                "roles": {
+                    "core": "Core",
+                    "public": "Public",
+                    "management": "Management",
+                    "storage": "Storage",
+                    "virtual": "Virtual"
+                }
+            }
+        }
+    }
+}

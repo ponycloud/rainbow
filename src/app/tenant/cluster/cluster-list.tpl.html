@@ -1,0 +1,44 @@
+<h1>List of clusters</h1>
+
+<ul class="nav nav-pills">
+	<li>
+		<a ng-click="open()">New cluster</a>
+	</li>
+</ul>
+	
+<table class="table table-striped">
+	<thead>
+	<tr>
+		<th>Name</th>
+	<!--	<th>Actions</th> -->
+	</tr>
+	</thead>
+	<tbody>
+	
+	<tr ng-repeat="cluster in clusters">
+		<td><a href="#/{{tenant}}/cluster/{{cluster.desired.uuid}}">{{cluster.desired.name}}</a></td>
+		<!-- <td><button type="button" class="btn-danger btn" ng-click="deleteCluster(cluster)">Delete</button></td> -->
+	</tr>
+	</tbody>
+</table>
+
+<div modal="shouldBeOpen" close="close()" options="opts">
+	<form class="form-horizontal modal-form">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+			<h3 id="myModalLabel">New cluster</h3>
+		</div>
+		<div class="modal-body">
+				<div class="control-group">
+					<label class="control-label">Name:</label>
+					<div class="controls">
+						<input type="text" name="name" ng-model="cluster.name">
+					</div>
+				</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn" data-dismiss="modal" aria-hidden="true"  ng-click="close()">Close</button>
+			<input type="submit" ng-click="createCluster()" class="btn btn-primary" data-dismiss="modal" value="Save changes">
+		</div>
+	</form>
+</div>
