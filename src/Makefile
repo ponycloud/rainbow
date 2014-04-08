@@ -1,7 +1,7 @@
 .PHONY: js-libs patch-api services
 
 js-libs:
-	tools/download-dependecies.sh
+	tools/download-dependencies.sh
 
 patch-api:
 	python ./tools/api-generator.py patch > common/api.coffee
