@@ -1,6 +1,6 @@
 module = angular.module 'rainbowServices'
 
-factoryFunction = (auth, $q, $rootScope) ->
+factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   data: {}
 
   registerEntity: (type, entity) ->
@@ -32,8 +32,7 @@ factoryFunction = (auth, $q, $rootScope) ->
       return @data[type]['items'][uuid]
 
   listenSocket: () ->
-    wsuri = 'ws://localhost:9000'
-    ab.connect wsuri, @_socketConnected, ab.log, {'caller': this}
+    ab.connect WS_URL, @_socketConnected, ab.log, {'caller': this}
 
   _socketConnected: (session) ->
     me = this

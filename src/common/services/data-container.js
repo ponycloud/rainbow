@@ -4,7 +4,7 @@
 
   module = angular.module('rainbowServices');
 
-  factoryFunction = function(auth, $q, $rootScope) {
+  factoryFunction = function(auth, $q, $rootScope, WS_URL) {
     return {
       data: {},
       registerEntity: function(type, entity) {
@@ -43,9 +43,7 @@
         }
       },
       listenSocket: function() {
-        var wsuri;
-        wsuri = 'ws://localhost:9000';
-        return ab.connect(wsuri, this._socketConnected, ab.log, {
+        return ab.connect(WS_URL, this._socketConnected, ab.log, {
           'caller': this
         });
       },

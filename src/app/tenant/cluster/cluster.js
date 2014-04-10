@@ -36,7 +36,7 @@ angular.module('tenant-cluster', [])
 
     $scope.createCluster = function() {
         var newCluster = new TenantCluster();
-        newCluster.name = $scope.cluster.name;
+        newCluster.desired = {'name': $scope.cluster.name};
         newCluster.$save({'tenant': $routeParams.tenant}, function(response) {
             $scope.clusters.push({'desired': response});
             $scope.message("Cluster created", 'success');

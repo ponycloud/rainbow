@@ -1,7 +1,7 @@
-module = angular.module 'rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi']
+module = angular.module 'rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi', 'rainbow.config']
 
-factoryFunction = ($http, $q, $timeout) ->
-  serverUrl: 'http://localhost:8080/api/v1'
+factoryFunction = ($http, $q, $timeout, WEB_URL, API_SUFFIX) ->
+  serverUrl: WEB_URL + API_SUFFIX
   getUserToken: () ->
     return localStorage.getItem 'user'
 

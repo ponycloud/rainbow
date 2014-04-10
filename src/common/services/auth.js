@@ -2,11 +2,11 @@
 (function() {
   var factoryFunction, module;
 
-  module = angular.module('rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi']);
+  module = angular.module('rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi', 'rainbow.config']);
 
-  factoryFunction = function($http, $q, $timeout) {
+  factoryFunction = function($http, $q, $timeout, WEB_URL, API_SUFFIX) {
     return {
-      serverUrl: 'http://localhost:8080/api/v1',
+      serverUrl: WEB_URL + API_SUFFIX,
       getUserToken: function() {
         return localStorage.getItem('user');
       },

@@ -4,7 +4,9 @@ import json
 import requests
 import sys
 
-schema_url = 'http://localhost:8080/api/v1/schema'
+
+
+schema_url = sys.argv[2] + '/schema'
 schema = requests.get(schema_url).content
 
 api = json.loads(schema)
@@ -176,14 +178,15 @@ def make_patch_api():
 def make_services():
 
     r = 's = angular.module "rainbowServices"\n'
-    r += 'serverUrl = "http://localhost:8080/api/v1"\n'
 
     for path in api_paths:
         name = ''.join([class_name(x) for x in path])
         url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in path])
-        url = '#{serverUrl}' + url
-    	r += "s.factory \"%s\", (resource) ->\n" % name
-        r += "\tresource(\"%s\", {'8080': ':8080'}, {query: {method: 'GET', isArray: false} })\n" % url
+        url = '#{WEB_URL}#{API_SUFFIX}' + url
+    	r += "s.factory \"%s\", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->\n" % name
+        r += '\tport_replace = {}\n'
+        r += '\tport_replace[WEB_PORT] = ":" + WEB_PORT\n'
+        r += "\tresource(\"%s\", port_replace, {query: {method: 'GET', isArray: false} })\n" % url
 
     return r
 
@@ -196,47 +199,4 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "services":
         print make_services()
-
-exit()
-
-for name, api_obj in entities.iteritems():
-	print generate_class(class_name(name), api_obj['children'])
-
-#generate_class('Root', api)
-
-print generate_class('Api', {})
-
-for path in api_paths:
-	f_name = '  @patch' + ''.join([class_name(x) for x in path])
-	f_args = '(%s)' % ', '.join([safe_name(x) for x in path])
-	f_path = '/' + '/'.join(['%s/#{%s}' % (x, safe_name(x)) for x in path])+ '/'
-
-	pkey = get_pkey(entities[path[-1]]['pkey'])
-	pkey_value = safe_name(path[-1])
-	c_name = class_name(path[-1])
-	f_body = '    return new %s null, "%s", %s' % (c_name, f_path, pkey_value)
-
-	r = '%s: %s ->\n%s\n' % (f_name, f_args, f_body)
-
-	print r
-
-print 's = angular.module "rainbowPatchApi", []'
-print 's.factory "Api", () -> return Api'
-
-
-
-
-#exit()
-
-#print 's = angular.module "rainbowServices"'
-#print 'serverUrl = "http://localhost:8080/api/v1"'
-
-for path in api_paths:
-	name = ''.join([class_name(x) for x in path])
-	url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in path])
-	url = '#{serverUrl}' + url
-#	print """
-#    s.factory "%s", (resource) ->
-#  resource("%s", {'8080': ':8080'}, {query: {method: 'GET', isArray: false} })
-#""" % (name, url)
 

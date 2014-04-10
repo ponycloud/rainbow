@@ -1,15 +1,17 @@
-module = angular.module 'tenant-dashboard', []
+module = angular.module 'tenant-dashboard', ['rainbowServices']
 
 module.config ['$routeProvider', ($routeProvider) ->
-  $routeProvider.when '/:tenant/dashboard',
-    templateUrl: 'tenant/tenant-dashboard.tpl.html'
-    conroller: 'TenantDashboardCtrl'
-
+  $routeProvider.when '/:tenant/dashboard', {
+    templateUrl: 'tenant/tenant-dashboard.tpl.html',
+    controller: TenantDashboardCtrl
+  }
 ]
 
 module.controller 'TenantDashboardCtrl',
-  class TenanatDashboardCtrl
-    @$inject = ['$scope', '$routeParams', 'Tenant']
+  class TenantDashboardCtrl
+    @$inject = ['$scope', '$routeParams', 'Tenant', 'StoragePool']
 
-    constructor: ($scope, $routeParams, Tenant) ->
+    constructor: ($scope, $routeParams, Tenant, StoragePool) ->
+      console.log('hello')
       $scope.tenant = Tenant.get {tenant: $routeParams.tenant}
+      StoragePool.get({})
