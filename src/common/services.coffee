@@ -171,6 +171,10 @@ s.factory "TenantClusterInstance", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
 	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/cluster/:cluster/instance/:instance", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantClusterInstanceJoin", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	port_replace = {}
+	port_replace[WEB_PORT] = ":" + WEB_PORT
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/cluster/:cluster/instance/_join/", port_replace, {query: {method: 'GET', isArray: false} })
 s.factory "TenantSwitch", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT

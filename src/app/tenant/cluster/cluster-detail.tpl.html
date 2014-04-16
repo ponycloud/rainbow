@@ -1,3 +1,24 @@
-<h1>Cluster detail</h1>
-		
-{{cluster}}
+<h1>Cluster "{{cluster.desired.name}}" detail</h1>
+<h2>Instances</h2>
+<p>
+
+<table class="table table-striped">
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Memory</th>
+		<th>State</th>
+		<th>CPU</th>
+	</tr>
+	</thead>
+	<tbody>
+	
+	<tr ng-repeat="instance in instances">
+		<td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
+		<td>{{instance.desired.mem}}</td>
+		<td>{{instance.desired.state}}</td>
+    <td><span class="label label-info">{{instance.desired.vcpu}} virtual</span>
+        <span class="label label-warning">{{instance.desired.rcpu}} reserved</span></td>
+	</tr>
+	</tbody>
+</table>

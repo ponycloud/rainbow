@@ -10,23 +10,24 @@
 	<thead>
 	<tr>
 		<th>Name</th>
-	<!--	<th>Actions</th> -->
+		<th>Actions</th>
 	</tr>
 	</thead>
 	<tbody>
 	
 	<tr ng-repeat="cluster in clusters">
 		<td><a href="#/{{tenant}}/cluster/{{cluster.desired.uuid}}">{{cluster.desired.name}}</a></td>
-		<!-- <td><button type="button" class="btn-danger btn" ng-click="deleteCluster(cluster)">Delete</button></td> -->
+		<td><button type="button" class="btn-success btn" ng-click="open(cluster)">Rename</button>
+		<button type="button" class="btn-danger btn" ng-click="deleteCluster(cluster)">Delete</button></td>
 	</tr>
 	</tbody>
 </table>
 
-<div modal="shouldBeOpen" close="close()" options="opts">
-	<form class="form-horizontal modal-form">
+<div modal="clusterModal" close="close()" options="opts">
+	<form class="form-horizontal modal-form" ng-submit="modifyCluster()">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
-			<h3 id="myModalLabel">New cluster</h3>
+			<h3 id="myModalLabel">Modify cluster</h3>
 		</div>
 		<div class="modal-body">
 				<div class="control-group">
@@ -37,8 +38,8 @@
 				</div>
 		</div>
 		<div class="modal-footer">
-			<button class="btn" data-dismiss="modal" aria-hidden="true"  ng-click="close()">Close</button>
-			<input type="submit" ng-click="createCluster()" class="btn btn-primary" data-dismiss="modal" value="Save changes">
+			<button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+			<button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
 		</div>
 	</form>
 </div>
