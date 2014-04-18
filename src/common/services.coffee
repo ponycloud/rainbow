@@ -119,30 +119,18 @@ s.factory "TenantMember", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
 	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/member/:member", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstance", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+s.factory "TenantAffinityGroup", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstanceVdisk", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantAffinityGroupInstance", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vdisk/:vdisk", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstanceCluster", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group/instance/:instance", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantAffinityGroupInstanceJoin", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/cluster/:cluster", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstanceVnic", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
-	port_replace = {}
-	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vnic/:vnic", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstanceVnicAddress", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
-	port_replace = {}
-	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vnic/:vnic/address/:address", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantInstanceEvent", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
-	port_replace = {}
-	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/event/:event", port_replace, {query: {method: 'GET', isArray: false} })
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group/instance/_join/", port_replace, {query: {method: 'GET', isArray: false} })
 s.factory "TenantImage", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
@@ -163,18 +151,30 @@ s.factory "TenantVolumeVdisk", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
 	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/volume/:volume/vdisk/:vdisk", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantCluster", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+s.factory "TenantInstance", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/cluster/:cluster", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantClusterInstance", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantInstanceVdisk", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/cluster/:cluster/instance/:instance", port_replace, {query: {method: 'GET', isArray: false} })
-s.factory "TenantClusterInstanceJoin", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vdisk/:vdisk", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantInstanceAffinityGroup", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT
-	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/cluster/:cluster/instance/_join/", port_replace, {query: {method: 'GET', isArray: false} })
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/affinity-group/:affinity_group", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantInstanceVnic", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	port_replace = {}
+	port_replace[WEB_PORT] = ":" + WEB_PORT
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vnic/:vnic", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantInstanceVnicAddress", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	port_replace = {}
+	port_replace[WEB_PORT] = ":" + WEB_PORT
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vnic/:vnic/address/:address", port_replace, {query: {method: 'GET', isArray: false} })
+s.factory "TenantInstanceEvent", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	port_replace = {}
+	port_replace[WEB_PORT] = ":" + WEB_PORT
+	resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/event/:event", port_replace, {query: {method: 'GET', isArray: false} })
 s.factory "TenantSwitch", (resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT

@@ -364,11 +364,11 @@
     });
   });
 
-  s.factory("TenantInstance", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantAffinityGroup", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/affinity-group/:affinity_group", port_replace, {
       query: {
         method: 'GET',
         isArray: false
@@ -376,11 +376,11 @@
     });
   });
 
-  s.factory("TenantInstanceVdisk", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantAffinityGroupInstance", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vdisk/:vdisk", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/affinity-group/:affinity_group/instance/:instance", port_replace, {
       query: {
         method: 'GET',
         isArray: false
@@ -388,47 +388,11 @@
     });
   });
 
-  s.factory("TenantInstanceCluster", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantAffinityGroupInstanceJoin", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/cluster/:cluster", port_replace, {
-      query: {
-        method: 'GET',
-        isArray: false
-      }
-    });
-  });
-
-  s.factory("TenantInstanceVnic", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
-    var port_replace;
-    port_replace = {};
-    port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vnic/:vnic", port_replace, {
-      query: {
-        method: 'GET',
-        isArray: false
-      }
-    });
-  });
-
-  s.factory("TenantInstanceVnicAddress", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
-    var port_replace;
-    port_replace = {};
-    port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vnic/:vnic/address/:address", port_replace, {
-      query: {
-        method: 'GET',
-        isArray: false
-      }
-    });
-  });
-
-  s.factory("TenantInstanceEvent", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
-    var port_replace;
-    port_replace = {};
-    port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/event/:event", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/affinity-group/:affinity_group/instance/_join/", port_replace, {
       query: {
         method: 'GET',
         isArray: false
@@ -496,11 +460,11 @@
     });
   });
 
-  s.factory("TenantCluster", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantInstance", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/cluster/:cluster", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance", port_replace, {
       query: {
         method: 'GET',
         isArray: false
@@ -508,11 +472,11 @@
     });
   });
 
-  s.factory("TenantClusterInstance", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantInstanceVdisk", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/cluster/:cluster/instance/:instance", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vdisk/:vdisk", port_replace, {
       query: {
         method: 'GET',
         isArray: false
@@ -520,11 +484,47 @@
     });
   });
 
-  s.factory("TenantClusterInstanceJoin", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+  s.factory("TenantInstanceAffinityGroup", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     var port_replace;
     port_replace = {};
     port_replace[WEB_PORT] = ":" + WEB_PORT;
-    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/cluster/:cluster/instance/_join/", port_replace, {
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/affinity-group/:affinity_group", port_replace, {
+      query: {
+        method: 'GET',
+        isArray: false
+      }
+    });
+  });
+
+  s.factory("TenantInstanceVnic", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    var port_replace;
+    port_replace = {};
+    port_replace[WEB_PORT] = ":" + WEB_PORT;
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vnic/:vnic", port_replace, {
+      query: {
+        method: 'GET',
+        isArray: false
+      }
+    });
+  });
+
+  s.factory("TenantInstanceVnicAddress", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    var port_replace;
+    port_replace = {};
+    port_replace[WEB_PORT] = ":" + WEB_PORT;
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/vnic/:vnic/address/:address", port_replace, {
+      query: {
+        method: 'GET',
+        isArray: false
+      }
+    });
+  });
+
+  s.factory("TenantInstanceEvent", function(resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    var port_replace;
+    port_replace = {};
+    port_replace[WEB_PORT] = ":" + WEB_PORT;
+    return resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/event/:event", port_replace, {
       query: {
         method: 'GET',
         isArray: false

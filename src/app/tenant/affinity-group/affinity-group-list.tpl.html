@@ -1,0 +1,54 @@
+<h1>List of affinity groups</h1>
+
+<ul class="nav nav-pills">
+	<li>
+		<a ng-click="open()">New affinity group</a>
+	</li>
+</ul>
+	
+<table class="table table-striped">
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Actions</th>
+	</tr>
+	</thead>
+	<tbody>
+	
+	<tr ng-repeat="affinityGroup in affinityGroups">
+		<td><a href="#/{{tenant}}/affinity-group/{{affinityGroup.desired.uuid}}">{{affinityGroup.desired.name}}</a></td>
+		<td><button type="button" class="btn-success btn" ng-click="open(affinityGroup)">Modify</button>
+		<button type="button" class="btn-danger btn" ng-click="deleteAffinityGroup(affinityGroup)">Delete</button></td>
+	</tr>
+	</tbody>
+</table>
+
+<div modal="affinityGroupModal" close="close()" options="opts">
+	<form class="form-horizontal modal-form" ng-submit="modifyAffinityGroup()">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+			<h3 id="myModalLabel">Modify affinity group</h3>
+		</div>
+		<div class="modal-body">
+				<div class="control-group">
+					<label class="control-label">Name:</label>
+					<div class="controls">
+						<input type="text" name="name" ng-model="affinityGroup.name">
+          </div>
+        </div>
+        <div class="control-group">
+              <label class="control-label">Type of affinity:</label>
+					<div class="controls">
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" ng-model="affinityGroup.type" btn-radio="'affinity'">Affinity</button>
+                <button type="button" class="btn btn-warning" ng-model="affinityGroup.type" btn-radio="'anti-affinity'">Anti-affinity</button>
+            </div>
+					</div>
+				</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+			<button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+		</div>
+	</form>
+</div>
