@@ -1,4 +1,4 @@
-module = angular.module 'platform-tenant', []
+module = angular.module 'platformTenant', []
 
 module.config ['$routeProvider', ($routeProvider) ->
     $routeProvider.when '/tenant',  {

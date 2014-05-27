@@ -10,10 +10,11 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
    }
 ]
 
-app_module = angular.module 'app', ['rainbowServices', 'rainbowDirectives', 
-    '$strap.directives', 'jm.i18next', 'ui.bootstrap', 'tenant-instance', 
-    'tenant-affinity-group', 'platform-tenant', 'common-controllers', 'tenant-image', 
-    'tenant-dashboard', 'host-network', 'app-login', 'host']
+app_module = angular.module 'app', ['rainbowServices', 'rainbowDirectives',
+    'ngRoute', 'ngAnimate', 'mgcrea.ngStrap', 'mgcrea.ngStrap.modal',
+    'jm.i18next',  'tenantInstance', 'tenantAffinityGroup', 'platformTenant',
+    'commonControllers', 'ngTable',
+    'tenantImage', 'tenantDashboard', 'hostNetwork', 'appLogin', 'host']
 
 app_module.config ['$routeProvider', '$locationProvider', ($routeProvider, $locationProvider) ->
   $routeProvider.otherwise {redirectTo: '/tenant'}

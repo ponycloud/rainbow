@@ -1,4 +1,4 @@
-module = angular.module 'common-controllers', ['rainbowServices']
+module = angular.module 'commonControllers', ['rainbowServices']
 
 module.controller 'MainCtrl',
   class MainCtrl
@@ -13,6 +13,7 @@ module.controller 'MainCtrl',
 
       $scope.$on '$routeChangeSuccess', () ->
         $scope.activePath = $location.path().split('/').pop()
+        $scope.path = $location.path().split('/')
         $scope.tenant = $routeParams.tenant
 
         if (auth.isLogged() && !$scope.socketsActive)

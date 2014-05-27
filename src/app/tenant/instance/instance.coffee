@@ -1,4 +1,4 @@
-module = angular.module 'tenant-instance', ['rainbowServices']
+module = angular.module 'tenantInstance', ['rainbowServices']
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/:tenant/instance',

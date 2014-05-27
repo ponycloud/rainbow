@@ -2,7 +2,7 @@
 (function() {
   var AffinityGroupDetailCtrl, AffinityGroupListCtrl, module;
 
-  module = angular.module('tenant-affinity-group', ['rainbowServices']);
+  module = angular.module('tenantAffinityGroup', ['rainbowServices']);
 
   module.config([
     '$routeProvider', function($routeProvider) {
@@ -20,28 +20,29 @@
   module.controller('AffinityGroupListCtrl', AffinityGroupListCtrl = (function() {
     AffinityGroupListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'dataContainer'];
 
-    function AffinityGroupListCtrl($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer) {
+    function AffinityGroupListCtrl($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal) {
       TenantAffinityGroup.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(affinityGroupList) {
         $scope.affinityGroups = affinityGroupList;
         return dataContainer.registerEntity('affinityGroup', $scope.affinityGroups);
       });
+      $scope.affinityGroupListModal = $modal({
+        scope: $scope,
+        template: 'tenant/affinity-group/affinity-group-list-modal.tpl.html',
+        show: false
+      });
       $scope.opts = {
         backdropFade: true,
         dialogFade: true
       };
       $scope.open = function(affinityGroup) {
-        $scope.affinityGroupModal = true;
-        if (typeof affinityGroup !== 'undefined') {
-          return $scope.affinityGroup = affinityGroup.desired;
-        } else {
-          return $scope.affinityGroup = null;
-        }
+        $scope.affinityGroupListModal.show();
+        return $scope.affinityGroup = {};
       };
       $scope.close = function() {
         $scope.closeMsg = 'I was closed at: ' + new Date();
-        $scope.affinityGroupModal = false;
+        $scope.affinityGroupListModal.hide();
         return false;
       };
       $scope.createAffinityGroup = function() {
@@ -54,12 +55,13 @@
         return newAffinityGroup.$save({
           'tenant': $routeParams.tenant
         }, function(response) {
-          return $scope.affinityGroups.push({
+          $scope.affinityGroups.push({
             'desired': {
               'uuid': response.uuids.POST,
               'name': $scope.affinityGroup.name
             }
           });
+          return $scope.affinityGroupListModal.hide();
         });
       };
       $scope.deleteAffinityGroup = function(affinityGroup, index) {
@@ -81,9 +83,9 @@
   })());
 
   module.controller('AffinityGroupDetailCtrl', AffinityGroupDetailCtrl = (function() {
-    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer'];
+    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer', '$modal'];
 
-    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance) {
+    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance, $modal) {
       $scope.affinityGroup = TenantAffinityGroup.get({
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
@@ -92,17 +94,22 @@
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
       });
-      console.log($scope.instances);
       TenantInstance.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(allInstances) {
         $scope.allInstances = allInstances;
-        return $scope.filteredInstances = $scope.filterUsedInstances(allInstances, $scope.instances);
+        return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
       });
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      };
+      $scope.affinityGroupEditModal = $modal({
+        scope: $scope,
+        template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html',
+        show: false
+      });
+      $scope.instanceListModal = $modal({
+        scope: $scope,
+        template: 'tenant/affinity-group/instance-list-modal.tpl.html',
+        show: false
+      });
       $scope.filterUsedInstances = function(all, linked) {
         var filtered, isLinked, item, key, linkedItem, _i, _j, _len, _len1;
         filtered = [];
@@ -158,7 +165,6 @@
           desired['uuid'] = response.uuids.POST;
           instance['joined'] = {};
           instance['joined'][desired.uuid] = desired;
-          console.log(instance);
           $scope.instances.push(instance);
           return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
         });
@@ -180,18 +186,18 @@
         return _results;
       };
       $scope.open = function(affinityGroup) {
-        return $scope.affinityGroupModal = true;
+        return $scope.affinityGroupEditModal.show();
       };
       $scope.close = function() {
-        $scope.affinityGroupModal = false;
+        $scope.affinityGroupEditModal.hide();
         return false;
       };
       $scope.instanceListOpen = function() {
         $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
-        return $scope.instanceListModal = true;
+        return $scope.instanceListModal.show();
       };
       $scope.instanceListClose = function() {
-        $scope.instanceListModal = false;
+        $scope.instanceListModal.hide();
         return false;
       };
     }

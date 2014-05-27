@@ -1,0 +1,65 @@
+<div class="modal" close="close()">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+              <form class="form-horizontal" ng-submit="editImage()">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+                  <h3 id="myModalLabel">Modify image</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                      <label class="col-sm-2">Name:</label>
+                      <div class="col-sm-10">
+                        <input type="text" class="form-control" name="name" ng-model="image.desired.name">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                          <label class="col-sm-2">Type of image:</label>
+                        <div class="btn-group col-sm-10">
+                            <label class="btn btn-default" ng-class="{active: image.desired.type=='disk'}">
+                                <input type="radio" ng-model="image.desired.type" class="hidden" value="disk">Disk
+                            </label>
+                            <label class="btn btn-default" ng-class="{active: image.desired.type=='cdrom'}">
+                                <input type="radio" ng-model="image.desired.type" class="hidden" value="cdrom">CD-ROM
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                          <label class="col-sm-2">Description:</label>
+                      <div class="col-sm-10">
+                            <textarea class="form-control" ng-model="image.desired.description"></textarea>
+                      </div>
+                    </div>
+
+                    <div class="form-group info">
+                      <label class="col-sm-2">Source URI:</label>
+                      <div class="col-sm-10">
+                        <input type="url" class="form-control" ng-model="image.desired.source_uri">
+
+                        <span class="help-line label label-info" ng-show="image.desired.source_uri">Image is initializing</span>
+                        <span class="help-block">If changed and saved, image will be reinitialized.</span>
+                      </div>
+                    </div>
+
+                    <div class="form-group warning">
+                      <label class="col-sm-2">Size:</label>
+                      <div class="col-sm-10">
+                        <input type="number" class="form-control" name="size" ng-model="image.size">
+
+                        <span class="help-line label label-warning" ng-show="image.size">This should not be changed</span>
+                        <span class="help-line label label-danger" ng-show="!image.size">Needs to be defined</span>
+                      </div>
+                    </div>
+
+                    <div class="modal-footer">
+                      <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+                      <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+                    </div>
+                  </form>
+            </div>
+        </div>
+    </div>
+</div>

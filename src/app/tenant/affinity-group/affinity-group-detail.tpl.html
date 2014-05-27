@@ -1,6 +1,6 @@
-<h1>Affinity group "{{affinityGroup.desired.name}}" detail</h1>
+<h1>Affinity group "{{affinityGroup.desired.name}}"</h1>
 
-<div class="span4 well">
+<div class="col-md-4 well">
     <h2>Details:</h2>
      <ul class="nav nav-pills">
       <li>
@@ -23,11 +23,11 @@
     </table>
 </div>
 
-<div class="span6 well">
+<div class="col-md-offset-1 col-md-6 well">
     <h2>Instances</h2>
     <ul class="nav nav-pills">
      <li>
-       <button class="btn btn-primary" ng-click="instanceListOpen()">
+     <button class="btn btn-primary" ng-class="{disabled: filteredInstances.length==0}" ng-click="instanceListOpen()">
            <i class="icon-edit icon-white"></i>
            Add instance
        </button>
@@ -56,71 +56,4 @@
       </tr>
       </tbody>
     </table>
-</div>
-
-
-<div modal="instanceListModal" close="instanceListClose()" options="opts">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="instanceListClose()">×</button>
-      <h3 id="myModalLabel">Manage instances</h3>
-    </div>
-    <div class="modal-body">
-        <div class="alert" ng-if="!filteredInstances.length">
-            No instances to assign to this affinity group.
-        </div>
-        <table class="table table-striped" ng-if="filteredInstances">
-          <thead>
-          <tr>
-            <th>Name</th>
-            <th>Actions</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr ng-repeat="instance in filteredInstances">
-            <td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
-            <td>{{instance.desired.state}}</td>
-            <td><span class="label label-info">{{instance.desired.vcpu}} virtual</span>
-                <span class="label label-warning">{{instance.desired.rcpu}} reserved</span></td>
-            <td><button type="button" class="btn-danger btn" ng-click="link(instance)">Link</button></td>
-          </tr>
-          </tbody>
-        </table>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="instanceListClose()">Close</button>
-    </div>
-
-</div>
-
-
-
-<div modal="affinityGroupModal" close="close()" options="opts">
-	<form class="form-horizontal modal-form" ng-submit="editAffinityGroup()">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
-			<h3 id="myModalLabel">Modify affinity group</h3>
-		</div>
-		<div class="modal-body">
-				<div class="control-group">
-					<label class="control-label">Name:</label>
-					<div class="controls">
-						<input type="text" name="name" ng-model="affinityGroup.desired.name">
-          </div>
-        </div>
-        <div class="control-group">
-              <label class="control-label">Type of affinity:</label>
-					<div class="controls">
-            <div class="btn-group">
-                <button type="button" class="btn" ng-model="affinityGroup.desired.type" btn-radio="'affinity'">Affinity</button>
-                <button type="button" class="btn" ng-model="affinityGroup.desired.type" btn-radio="'anti-affinity'">Anti-affinity</button>
-            </div>
-					</div>
-				</div>
-		</div>
-		<div class="modal-footer">
-			<button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
-			<button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
-		</div>
-	</form>
 </div>

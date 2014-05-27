@@ -2,7 +2,7 @@
 (function() {
   var ImageDetailCtrl, ImageListCtrl, module;
 
-  module = angular.module('tenant-image', ['rainbowServices']);
+  module = angular.module('tenantImage', ['rainbowServices']);
 
   module.config([
     '$routeProvider', function($routeProvider) {
@@ -18,35 +18,37 @@
   ]);
 
   module.controller('ImageListCtrl', ImageListCtrl = (function() {
-    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer'];
+    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal'];
 
-    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer) {
+    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal) {
       TenantImage.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(ImageList) {
         $scope.images = ImageList;
         return dataContainer.registerEntity('image', $scope.images);
       });
+      $scope.imageModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/image-modal.tpl.html',
+        show: false
+      });
       StoragePool.list().$promise.then(function(StoragePoolList) {
         $scope.storagepools = StoragePoolList;
         return dataContainer.registerEntity('storagepools', $scope.storagepools);
       });
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      };
       $scope.open = function() {
         $scope.image = {
           'storagepools': {}
         };
-        return $scope.imageModal = true;
+        return $scope.imageModal.show();
       };
       $scope.close = function() {
-        $scope.imageModal = false;
+        $scope.imageModal.hide();
         return false;
       };
       $scope.createImage = function() {
         var newImage;
+        console.log($scope.image);
         newImage = new TenantImage();
         newImage.desired = {
           'name': $scope.image.name,
@@ -107,9 +109,9 @@
   })());
 
   module.controller('ImageDetailCtrl', ImageDetailCtrl = (function() {
-    ImageDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer'];
+    ImageDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer', '$modal'];
 
-    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer) {
+    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal) {
       var criteria, remove_volume;
       criteria = {
         'tenant': $routeParams.tenant,
@@ -120,10 +122,16 @@
         'tenant': $routeParams.tenant
       });
       $scope.storagepools = {};
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      };
+      $scope.imageEditModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/image-edit-modal.tpl.html',
+        show: false
+      });
+      $scope.volumeListModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/volume-list-modal.tpl.html',
+        show: false
+      });
       StoragePool.list().$promise.then(function(StoragePoolList) {
         var storagepool, storagepools, _i, _len;
         storagepools = StoragePoolList;
@@ -134,8 +142,8 @@
         }
         return TenantImageVolume.list(criteria).$promise.then(function(TenantImageList) {
           var volume, _j, _len1, _ref, _results;
-          $scope.back_volumes = TenantImageList;
-          _ref = $scope.back_volumes;
+          $scope.backVolumes = TenantImageList;
+          _ref = $scope.backVolumes;
           _results = [];
           for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
             volume = _ref[_j];
@@ -161,17 +169,17 @@
             return item;
           }
         });
-        return $scope.imageModal = true;
+        return $scope.imageEditModal.show();
       };
       $scope.close = function() {
-        $scope.imageModal = false;
+        $scope.imageEditModal.hide();
         return false;
       };
-      $scope.volume_list_open = function() {
-        return $scope.volumeListModal = true;
+      $scope.volumeListOpen = function() {
+        return $scope.volumeListModal.show();
       };
-      $scope.volume_list_close = function() {
-        $scope.volumeListModal = false;
+      $scope.volumeListClose = function() {
+        $scope.volumeListModal.hide();
         return false;
       };
       $scope.allocate = function(storagepool, size) {
@@ -200,7 +208,7 @@
           pool.volumes.push({
             desired: desired
           });
-          return $scope.back_volumes.push({
+          return $scope.backVolumes.push({
             desired: desired
           });
         });
@@ -209,7 +217,7 @@
         $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size;
         $scope.storagepools[volume.desired.storage_pool].used = false;
         $scope.storagepools[volume.desired.storage_pool].volumes = [];
-        return $scope.back_volumes = $scope.back_volumes.filter(function(item) {
+        return $scope.backVolumes = $scope.backVolumes.filter(function(item) {
           return item.desired.uuid !== volume.desired.uuid;
         });
       };

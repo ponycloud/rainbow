@@ -1,4 +1,4 @@
-module = angular.module 'tenant-affinity-group', ['rainbowServices']
+module = angular.module 'tenantAffinityGroup', ['rainbowServices']
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/:tenant/affinity-group', {
@@ -15,11 +15,12 @@ module.controller 'AffinityGroupListCtrl',
   class AffinityGroupListCtrl
     @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'dataContainer']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal) ->
       TenantAffinityGroup.list({'tenant': $routeParams.tenant}).$promise.then((affinityGroupList) ->
         $scope.affinityGroups = affinityGroupList
         dataContainer.registerEntity('affinityGroup', $scope.affinityGroups)
       )
+      $scope.affinityGroupListModal = $modal({scope: $scope, template: 'tenant/affinity-group/affinity-group-list-modal.tpl.html', show: false})
 
       $scope.opts = {
         backdropFade: true,
@@ -27,15 +28,12 @@ module.controller 'AffinityGroupListCtrl',
       }
 
       $scope.open = (affinityGroup) ->
-        $scope.affinityGroupModal = true
-        if typeof(affinityGroup) != 'undefined'
-          $scope.affinityGroup = affinityGroup.desired
-        else
-          $scope.affinityGroup = null
+        $scope.affinityGroupListModal.show()
+        $scope.affinityGroup = {}
 
       $scope.close = () ->
         $scope.closeMsg = 'I was closed at: ' + new Date()
-        $scope.affinityGroupModal = false
+        $scope.affinityGroupListModal.hide()
         false
 
       $scope.createAffinityGroup = () ->
@@ -44,7 +42,7 @@ module.controller 'AffinityGroupListCtrl',
           newAffinityGroup.$save({'tenant': $routeParams.tenant}, (response) ->
             # Construct data to push to the list.
             $scope.affinityGroups.push({'desired': {'uuid':response.uuids.POST, 'name': $scope.affinityGroup.name}})
-            #$scope.message("AffinityGroup created", 'success')
+            $scope.affinityGroupListModal.hide()
           )
 
       $scope.deleteAffinityGroup = (affinityGroup, index) ->
@@ -58,21 +56,19 @@ module.controller 'AffinityGroupListCtrl',
 
 module.controller 'AffinityGroupDetailCtrl',
   class AffinityGroupDetailCtrl
-    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer']
+    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer', '$modal']
 
-    constructor: ($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance) ->
+    constructor: ($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance, $modal) ->
       $scope.affinityGroup = TenantAffinityGroup.get({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
       $scope.instances = TenantAffinityGroupInstanceJoin.list({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
-      console.log($scope.instances)
       TenantInstance.list({'tenant': $routeParams.tenant}).$promise.then((allInstances) ->
         $scope.allInstances = allInstances
-        $scope.filteredInstances = $scope.filterUsedInstances(allInstances, $scope.instances)
+        $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
        )
 
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      }
+      $scope.affinityGroupEditModal = $modal({scope: $scope, template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html', show: false})
+      $scope.instanceListModal = $modal({scope: $scope, template: 'tenant/affinity-group/instance-list-modal.tpl.html', show: false})
+
 
       # Filter those instances that are not linked
       $scope.filterUsedInstances = (all, linked) ->
@@ -111,7 +107,6 @@ module.controller 'AffinityGroupDetailCtrl',
           desired['uuid'] = response.uuids.POST
           instance['joined'] = {}
           instance['joined'][desired.uuid] = desired
-          console.log instance
           $scope.instances.push instance
           $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
         )
@@ -130,18 +125,18 @@ module.controller 'AffinityGroupDetailCtrl',
 
       # Open the modal of the aff. group details
       $scope.open = (affinityGroup) ->
-        $scope.affinityGroupModal = true
+        $scope.affinityGroupEditModal.show()
 
       $scope.close = () ->
-        $scope.affinityGroupModal = false
+        $scope.affinityGroupEditModal.hide()
         false
 
       # Open the modal with unlinked instances
       $scope.instanceListOpen = () ->
         $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
-        $scope.instanceListModal = true
+        $scope.instanceListModal.show()
 
       $scope.instanceListClose = () ->
-        $scope.instanceListModal = false
+        $scope.instanceListModal.hide()
         false
 

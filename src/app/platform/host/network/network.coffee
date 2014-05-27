@@ -1,4 +1,4 @@
-module = angular.module 'host-network', []
+module = angular.module 'hostNetwork', []
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/host/:host/network', {

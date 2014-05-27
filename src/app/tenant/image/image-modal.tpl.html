@@ -1,0 +1,72 @@
+<div class="modal" close="close()" options="opts">
+    <div class="modal-dialog">
+        <div class="modal-content">
+          <form role="form" class="form-horizontal" ng-submit="createImage()">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+              <h3 id="myModalLabel">Create image</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="col-sm-2">Name:</label>
+                    <div class="col-sm-6">
+                        <input type="text" name="name" ng-model="image.name" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                      <label class="col-sm-2">Type of image:</label>
+                    <div class="btn-group col-sm-10">
+                        <label class="btn btn-default" ng-class="{active: image.type=='disk'}">
+                            <input type="radio" ng-model="image.type" class="hidden" value="disk">Disk
+                        </label>
+                        <label class="btn btn-default" ng-class="{active: image.type=='cdrom'}">
+                            <input type="radio" ng-model="image.type" class="hidden" value="cdrom">CD-ROM
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2">Storage pools:</label>
+                    <div class="col-sm-10">
+                      <ul class="list-unstyled">
+                        <li ng-repeat="storagepool in storagepools">
+                        <label class="checkbox">
+                             <input type="checkbox" ng-model="image.storagepools[storagepool.desired.uuid]">
+                             {{storagepool.desired.name}}
+                         </label>
+                        </li>
+                      </ul>
+                    </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2">URL to initialize from:</label>
+                  <div class="col-sm-10">
+                    <input type="url" class="form-control" name="url" placeholder="https://example.com/image.iso" ng-model="image.source_uri">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2">Size:</label>
+                  <div class="col-sm-2">
+                    <input class="form-control" type="number" name="size" ng-model="image.size" placeholder="in MB">
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                      <label class="col-sm-2">Description:</label>
+                      <div class="col-sm-10">
+                          <textarea class="form-control" ng-model="image.description"></textarea>
+                      </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+              <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+            </div>
+          </form>
+      </div>
+  </div>
+</div>
+

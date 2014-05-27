@@ -4,29 +4,24 @@ body {
 
 @font-face {
   font-family: tmo;
-  src: url("../font/TextMeOne-Regular.ttf"), url("../font/TextMeOne-Regular.eot");
+  src: url("../fonts/TextMeOne-Regular.ttf"), url("../fonts/TextMeOne-Regular.eot");
   /* IE9+ */ }
-
 @font-face {
   font-family: po;
-  src: url("../font/PoiretOne-Regular.ttf"), url("../font/PoiretOne-Regular.eot");
+  src: url("../fonts/PoiretOne-Regular.ttf"), url("../fonts/PoiretOne-Regular.eot");
   /* IE9+ */ }
-
 @font-face {
   font-family: fl;
-  src: url("../font/Flamenco-Light.ttf"), url("../font/Flamenco-Light.eot");
+  src: url("../fonts/Flamenco-Light.ttf"), url("../fonts/Flamenco-Light.eot");
   /* IE9+ */ }
-
 @font-face {
   font-family: js;
-  src: url("../font/JuliusSansOne-Regular.ttf"), url("../font/Flamenco-Light.eot");
+  src: url("../fonts/JuliusSansOne-Regular.ttf"), url("../fonts/Flamenco-Light.eot");
   /* IE9+ */ }
-
 @font-face {
   font-family: ns;
-  src: url("../font/Neo Sans.ttf"), url("../font/Flamenco-Light.eot");
+  src: url("../fonts/Neo Sans.ttf"), url("../fonts/Flamenco-Light.eot");
   /* IE9+ */ }
-
 h1, h2, h3, h4 {
   font-family: ns;
   font-weight: normal; }
@@ -58,7 +53,6 @@ h2 {
 
   100% {
     opacity: 1.0; } }
-
 @-moz-keyframes fadeout {
   0% {
     opacity: 1.0; }
@@ -68,7 +62,6 @@ h2 {
 
   100% {
     opacity: 1.0; } }
-
 @-o-keyframes fadeout {
   0% {
     opacity: 1.0; }
@@ -78,7 +71,6 @@ h2 {
 
   100% {
     opacity: 1.0; } }
-
 @keyframes fadeout {
   0% {
     opacity: 1.0; }
@@ -88,6 +80,5 @@ h2 {
 
   100% {
     opacity: 1.0; } }
-
 .animate {
   -moz-animation: fadeout normal 1.5s infinite; }

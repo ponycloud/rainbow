@@ -1,4 +1,4 @@
-module = angular.module 'tenant-dashboard', ['rainbowServices']
+module = angular.module 'tenantDashboard', ['rainbowServices']
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/:tenant/dashboard', {
