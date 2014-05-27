@@ -62,34 +62,6 @@
           });
         });
       };
-      $scope.modifyAffinityGroup = function() {
-        if (typeof $scope.affinityGroup.uuid === 'undefined') {
-          $scope.createAffinityGroup();
-        } else {
-          $scope.editAffinityGroup();
-        }
-        return $scope.close();
-      };
-      $scope.editAffinityGroup = function() {
-        var params, patch;
-        patch = JSON.stringify([
-          {
-            'op': 'x-merge',
-            'path': '/desired',
-            'value': {
-              'name': $scope.affinityGroup.name,
-              'type': $scope.affinityGroup.type
-            }
-          }
-        ]);
-        params = {
-          'tenant': $routeParams.tenant,
-          'affinity_group': $scope.affinityGroup.uuid
-        };
-        return TenantAffinityGroup.patch(params, patch, function() {
-          return $scope.message("Affinity group modified", 'success');
-        });
-      };
       $scope.deleteAffinityGroup = function(affinityGroup, index) {
         var params, position;
         position = $scope.affinityGroups.indexOf(affinityGroup);
@@ -109,9 +81,9 @@
   })());
 
   module.controller('AffinityGroupDetailCtrl', AffinityGroupDetailCtrl = (function() {
-    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'dataContainer'];
+    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer'];
 
-    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin) {
+    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance) {
       $scope.affinityGroup = TenantAffinityGroup.get({
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
@@ -120,6 +92,108 @@
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
       });
+      console.log($scope.instances);
+      TenantInstance.list({
+        'tenant': $routeParams.tenant
+      }).$promise.then(function(allInstances) {
+        $scope.allInstances = allInstances;
+        return $scope.filteredInstances = $scope.filterUsedInstances(allInstances, $scope.instances);
+      });
+      $scope.opts = {
+        backdropFade: true,
+        dialogFade: true
+      };
+      $scope.filterUsedInstances = function(all, linked) {
+        var filtered, isLinked, item, key, linkedItem, _i, _j, _len, _len1;
+        filtered = [];
+        for (key = _i = 0, _len = all.length; _i < _len; key = ++_i) {
+          item = all[key];
+          isLinked = false;
+          for (_j = 0, _len1 = linked.length; _j < _len1; _j++) {
+            linkedItem = linked[_j];
+            if (item.desired.uuid === linkedItem.desired.uuid) {
+              isLinked = true;
+              break;
+            }
+          }
+          if (!isLinked) {
+            filtered.push(item);
+          }
+        }
+        return filtered;
+      };
+      $scope.editAffinityGroup = function() {
+        var params, patch;
+        patch = JSON.stringify([
+          {
+            'op': 'x-merge',
+            'path': '/desired',
+            'value': {
+              'name': $scope.affinityGroup.desired.name,
+              'type': $scope.affinityGroup.desired.type
+            }
+          }
+        ]);
+        params = {
+          'tenant': $routeParams.tenant,
+          'affinity_group': $scope.affinityGroup.desired.uuid
+        };
+        return TenantAffinityGroup.patch(params, patch, function() {
+          $scope.close();
+          return $scope.message("Affinity group modified", 'success');
+        });
+      };
+      $scope.link = function(instance) {
+        var desired, newLink;
+        newLink = new TenantAffinityGroupInstance();
+        desired = {
+          'affinity_group': $routeParams.affinity_group,
+          'instance': instance.desired.uuid
+        };
+        newLink.desired = desired;
+        return newLink.$save({
+          'tenant': $routeParams.tenant,
+          'affinity_group': $routeParams.affinity_group
+        }, function(response) {
+          desired['uuid'] = response.uuids.POST;
+          instance['joined'] = {};
+          instance['joined'][desired.uuid] = desired;
+          console.log(instance);
+          $scope.instances.push(instance);
+          return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
+        });
+      };
+      $scope.unlink = function(instance) {
+        var key, params, _results;
+        _results = [];
+        for (key in instance.joined) {
+          params = {
+            'tenant': $routeParams.tenant,
+            'affinity_group': $routeParams.affinity_group,
+            'instance': key
+          };
+          TenantAffinityGroupInstance["delete"](params, function(response) {}, $scope.instances = $scope.instances.filter(function(item) {
+            return item.desired.uuid !== instance.desired.uuid;
+          }));
+          _results.push($scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances));
+        }
+        return _results;
+      };
+      $scope.open = function(affinityGroup) {
+        return $scope.affinityGroupModal = true;
+      };
+      $scope.close = function() {
+        $scope.affinityGroupModal = false;
+        return false;
+      };
+      $scope.instanceListOpen = function() {
+        $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
+        return $scope.instanceListModal = true;
+      };
+      $scope.instanceListClose = function() {
+        $scope.instanceListModal = false;
+        return false;
+      };
     }
 
     return AffinityGroupDetailCtrl;
