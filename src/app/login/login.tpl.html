@@ -23,26 +23,31 @@
         font-weight: bold;
         color: #404040;
     }
+    .alertrow {
+        margin-top: 20px;
+    }
 </style>
 <div class="container">
     <div class="content">
         <div class="row">
-                 <h2>Login to ponycloud</h2>
+                <h2 style="width:96px;height: 40px; display:block;margin:0 auto 10px;">PonyCloud</h2>
                 <form ng-submit="login()" ng-controller="LoginCtrl">
                     <fieldset>
-                        <div class="clearfix">
-                            <input class="form-control" type="text" placeholder="Username" name="username" ng-model="username"
-                            />
+                        <div class="form-group">
+                            <input class="form-control" type="text" id="name" placeholder="Username" name="username" ng-model="username"
+                            required autofocus/>
                         </div>
-                        <div class="clearfix">
+                        <div class="form-group">
                             <input class="form-control" type="password" placeholder="Password" name="password" ng-model="password"
                             />
                         </div>
-                        <button class="btn btn-default primary" type="submit">Sign in</button>
+                        <button class="btn btn-primary btn-block" type="submit">Sign in</button>
                     </fieldset>
                 </form>
         </div>
-        <div class="alert alert-danger" ng-show="error">{{ error }}</div>
+        <div class="row alertrow">
+            <div class="alert alert-danger" ng-show="error"><strong>{{error.error}}</strong><p>{{ error.message }}</p></div>
+        </div>
     </div>
 </div>
 <!-- /container -->
