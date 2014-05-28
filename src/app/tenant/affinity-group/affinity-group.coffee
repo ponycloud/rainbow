@@ -129,6 +129,7 @@ module.controller 'AffinityGroupDetailCtrl',
 
       $scope.close = () ->
         $scope.affinityGroupEditModal.hide()
+        $scope.affinityGroup = TenantAffinityGroup.get({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
         false
 
       # Open the modal with unlinked instances

@@ -87,7 +87,7 @@ module.controller 'ImageDetailCtrl',
       ['$scope', '$rootScope', '$routeParams', 'TenantImage',
        'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer', '$modal']
 
-    constructor: ($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal) ->
+    constructor: ($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal, $route) ->
       criteria = {'tenant': $routeParams.tenant, 'image': $routeParams.image}
       $scope.image = TenantImage.get(criteria)
       $scope.volumes = TenantVolume.list({'tenant': $routeParams.tenant})
@@ -116,7 +116,8 @@ module.controller 'ImageDetailCtrl',
               $scope.storagepools[volume.desired.storage_pool].volumes.push volume
               $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size
 
-              $scope.image.size = volume.desired.size
+              $scope.imageSize = volume.desired.size
+              $scope.image.size = $scope.imageSize
 
             else
               $scope.storagepools[volume.desired.storage_pool].used = false
@@ -135,6 +136,7 @@ module.controller 'ImageDetailCtrl',
       # Close modal dialog with image details
       $scope.close = () ->
         $scope.imageEditModal.hide()
+        $route.reload()
         false
 
       $scope.volumeListOpen = () ->

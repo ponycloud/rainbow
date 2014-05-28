@@ -111,7 +111,7 @@
   module.controller('ImageDetailCtrl', ImageDetailCtrl = (function() {
     ImageDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer', '$modal'];
 
-    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal) {
+    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal, $route) {
       var criteria, remove_volume;
       criteria = {
         'tenant': $routeParams.tenant,
@@ -155,7 +155,8 @@
               }
               $scope.storagepools[volume.desired.storage_pool].volumes.push(volume);
               $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size;
-              _results.push($scope.image.size = volume.desired.size);
+              $scope.imageSize = volume.desired.size;
+              _results.push($scope.image.size = $scope.imageSize);
             } else {
               _results.push($scope.storagepools[volume.desired.storage_pool].used = false);
             }
@@ -173,6 +174,7 @@
       };
       $scope.close = function() {
         $scope.imageEditModal.hide();
+        $route.reload();
         return false;
       };
       $scope.volumeListOpen = function() {
