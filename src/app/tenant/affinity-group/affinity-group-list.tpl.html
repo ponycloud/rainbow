@@ -7,18 +7,21 @@
         New affinity group
     </button>
 	</li>
+  <li class="pull-right">
+    <input class="form-control" ng-model="search" placeholder="Filter">
+  </li>
 </ul>
 	
 <table class="table table-striped">
 	<thead>
 	<tr>
-		<th>Name</th>
+    <th ng-click="predicate = 'desired.name'; reverse=!reverse">Name</th>
 		<th>Actions</th>
 	</tr>
 	</thead>
 	<tbody>
 	
-	<tr ng-repeat="affinityGroup in affinityGroups">
+	<tr ng-repeat="affinityGroup in affinityGroups | filter: search | orderBy:predicate:reverse"">
 		<td>{{affinityGroup.desired.name}}</td>
 
     <td><a class="btn btn-success" href="#/{{tenant}}/affinity-group/{{affinityGroup.desired.uuid}}">

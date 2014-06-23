@@ -1,130 +1,156 @@
 <div>
 	<h1>Network Interfaces</h1>
 
-	<div class="row-fluid">
-		<form class="modal-form form-horizontal" name="form">
-			<div class="span9 network_manager">
-				<div class="aggregation" ng-repeat="bond in ngModel.bonds">
-					<button class="close" ng-click="removeAggregation($index)">&times;</button>
+	<div class="row">
+		<form class="modal-form" name="form">
+			<div class="col-md-9">
+				<div class="well" ng-repeat="bond in ngModel.bonds">
+            <div class="row">
+					      <button class="close" ng-click="removeAggregation($index)">&times;</button>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="row">
+                  <h4>{{ 'host.network.bond.settings' | i18next }}</h4>
 
-					<h4>{{ 'host.network.bond.settings' | i18next }}</h4>
+                  <div class="form-group">
+                    <label class="col-sm-3">{{ 'host.network.bond.mode.title' | i18next }}</label>
 
-					<div class="control-group">
-						<label class="control-label">{{ 'host.network.bond.mode.title' | i18next }}</label>
+                    <div class="controls">
+                      <div class="btn-group" ng-model="bond.desired.mode" bs-radio-group>
+                        <label class="btn btn-default">
+                            <input type="radio" value="802.3ad"> {{ 'host.network.bond.mode.8023ad' | i18next }}
+                        </label>
+                        <label class="btn btn-default">
+                            <input type="radio" value="active-backup"> {{ 'host.network.bond.mode.active-backup' | i18next }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
 
-						<div class="controls">
-							<div class="btn-group" bs-buttons-radio ng-model="bond.desired.mode">
-								<button type="button" class="btn" value="802.3ad">{{ 'host.network.bond.mode.8023ad' | i18next }}</button>
-								<button type="button" class="btn" value="active-backup">{{ 'host.network.bond.mode.active-backup' | i18next }}</button>
-							</div>
-						</div>
-					</div>
+                  <div class="form-group" ng-show="bond.desired.mode == '802.3ad'">
+                    <label class="col-sm-3">{{ 'host.network.bond.xmit-hash-policy.title' | i18next }}</label>
 
-					<div class="control-group" ng-show="bond.desired.mode == '802.3ad'">
-						<label class="control-label">{{ 'host.network.bond.xmit-hash-policy.title' | i18next }}</label>
+                    <div class="controls">
+                      <div class="btn-group" ng-model="bond.desired.xmit_hash_policy" bs-radio-group>
+                        <label class="btn btn-default">
+                            <input type="radio"class="hidden" value="layer2">{{ 'host.network.bond.xmit-hash-policy.layer2' | i18next }}
+                        </label>
+                        <label class="btn btn-default">
+                            <input type="radio" class="hidden" value="layer2+3">{{ 'host.network.bond.xmit-hash-policy.layer23' | i18next }}
+                        </label>
+                         <label class="btn btn-default">
+                            <input type="radio" class="hidden" value="layer3+4">{{ 'host.network.bond.xmit-hash-policy.layer34' | i18next }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
 
-						<div class="controls">
-							<div class="btn-group" bs-buttons-radio ng-model="bond.desired.xmit_hash_policy">
-								<button type="button" class="btn" value="layer2">{{ 'host.network.bond.xmit-hash-policy.layer2' | i18next }}</button>
-								<button type="button" class="btn" value="layer2+3">{{ 'host.network.bond.xmit-hash-policy.layer23' | i18next }}</button>
-								<button type="button" class="btn" value="layer3+4">{{ 'host.network.bond.xmit-hash-policy.layer34' | i18next }}</button>
-							</div>
-						</div>
-					</div>
+                  <div class="form-group" ng-show="bond.desired.mode == '802.3ad'">
+                    <label class="col-sm-3">{{ 'host.network.bond.lacp-rate.title' | i18next }}</label>
 
-					<div class="control-group" ng-show="bond.desired.mode == '802.3ad'">
-						<label class="control-label">{{ 'host.network.bond.lacp-rate.title' | i18next }}</label>
+                    <div class="controls">
+                      <div class="btn-group" ng-model="bond.desired.lacp_rate" bs-radio-group>
+                        <label class="btn btn-default">
+                            <input type="radio" value="fast">{{ 'host.network.bond.lacp-rate.fast' | i18next }}</input>
+                        </label>
 
-						<div class="controls">
-							<div class="btn-group" bs-buttons-radio ng-model="bond.desired.lacp_rate">
-								<button type="button" class="btn" value="fast">{{ 'host.network.bond.lacp-rate.fast' | i18next }}</button>
-								<button type="button" class="btn" value="slow">{{ 'host.network.bond.lacp-rate.slow' | i18next }}</button>
-							</div>
+                        <label class="btn btn-default">
+                            <input type="radio" value="slow">{{ 'host.network.bond.lacp-rate.slow' | i18next }}</input>
+                        </label>
+                      </div>
 
-						</div>
-					</div>
+                    </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-md-6">
+                  <h4>Physical NICs</h4>
 
-					<h4>Network Roles</h4>
+                  <div class="form-group" ng-show="bond.desired.nics.length == 0">
+                    <div class="controls">
+                      This bond is very lonely. Introduce it to some cute NICs.
+                    </div>
+                  </div>
 
-					<div class="control-group" ng-show="bond.desired.roles.length == 0">
-						<div class="controls">
-							No network roles make this bond sad. Make it happy by adding some roles.
-						</div>
-					</div>
+                  <div class="form-group" data-role="{{nic.desired.hwaddr}}" ng-repeat="nic in bond.desired.nics">
+                    <div class="controls">
+                      <span>{{nic.desired.hwaddr}} </span>
+                      <a ng-click="removeNic(bond, $index)"> <span class="glyphicon glyphicon-remove"></span></a>
+                    </div>
+                  </div>
 
-					<div class="control-group" data-role="{{ role.desired.role }}"
-					     ng-repeat="role in bond.desired.roles">
-						<label class="control-label">{{role.desired.role}}</label>
+                  <div class="form-group">
+                    <div class="controls">
+                      <div class="dropdown">
+                        <a class="dropdown-toggle btn btn-primary" data-toggle="dropdown"><i class="glyphicon glyphicon-plus"></i> Add NIC</a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                          <li ng-class="{disabled: !nic.enabled}" ng-repeat="(hwaddr, nic) in availableNics">
+                            <a href="javascript:void(0);" ng-click="addNic(bond, hwaddr)">{{ hwaddr }}</a>
+                          </li>
+                          <li class="divider"></li>
+                          <li><a ng-click="addAllAvailableResources(bond, 'nic')">Add all available</a></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+              </div>
 
-						<div class="controls">
-							<div class="input-prepend">
-								<span class="add-on">VLAN</span>
-								<input id="tag" name="vlan_id" type="number" min="1" max="4096" class="input-small" placeholder="vlan tag"
-								       ng-model="role.desired.vlan_id">
+              </div>
+              </div>
+              <div class="col-md-6">
 
-							</div>
-							<div class="input-prepend"
-							     ng-show="role.desired.role != 'core' && role.desired.role != 'management'">
-								<span class="add-on">IP</span>
-								<input id="ip" type="text" class="input-xlarge" placeholder="IPv4 or IPv6 address"
-								       ng-model="role.desired.address">
-							</div>
-							<a ng-click="removeNicRole(bond, $index)"> <i class="icon-remove"></i></a>
+                  <h4>Network Roles</h4>
 
-							<span class="help-block" ng-show="form.vlan_id.$error.number">This is not valid number!</span>
-							<span class="help-block" ng-show="form.vlan_id.$error.min || form.vlan_id.$error.max">The value must be in range 1 to 4096!</span>
+                  <div class="form-group" ng-show="bond.desired.roles.length == 0">
+                    <div class="controls">
+                      No network roles make this bond sad. Make it happy by adding some roles.
+                    </div>
+                  </div>
 
-						</div>
-					</div>
+                  <div class="form-group" data-role="{{ role.desired.role }}"
+                       ng-repeat="role in bond.desired.roles">
+                       <div class="col-md-4">
+                           <label>{{role.desired.role}}</label>
+                           <a class="pull-right" ng-click="removeNicRole(bond, $index)"> <span class="glyphicon glyphicon-remove"></span></a>
+                       </div>
 
-					<div class="control-group">
-						<div class="controls">
-							<div class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> Add role</a>
-								<ul class="dropdown-menu" role="menu">
-									<li ng-class="{disabled: !role.enabled}" ng-repeat="(id, role) in availableRoles">
-										<a ng-click="addNicRole(bond, id)">{{ role.name }}</a>
-									</li>
-									<li class="divider"></li>
-									<li><a ng-click="addAllAvailableResources(bond, 'nic_role')">Add all available</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
+                    <div class="col-md-8 form-group">
+                      <div class="col-md-6 input-group">
+                        <span class="input-group-addon">VLAN</span>
+                        <input class="form-control" id="tag" name="vlan_id" type="number" min="1" max="4096" placeholder="tag"
+                               ng-model="role.desired.vlan_id">
+                      </div>
 
-					<h4>Physical NICs</h4>
+                      <div class="col-md-9 input-group"
+                           ng-show="role.desired.role != 'core' && role.desired.role != 'management'">
+                        <span class="input-group-addon">IP</span>
+                        <input id="ip" type="text" class="form-control" placeholder="IPv4 or IPv6"
+                               ng-model="role.desired.address">
+                      </div>
 
-					<div class="control-group" ng-show="bond.desired.nics.length == 0">
-						<div class="controls">
-							This bond is very lonely. Introduce it to some cute NICs.
-						</div>
-					</div>
+                      <span class="help-block" ng-show="form.vlan_id.$error.number">This is not valid number!</span>
+                      <span class="help-block" ng-show="form.vlan_id.$error.min || form.vlan_id.$error.max">The value must be in range 1 to 4096!</span>
 
-					<div class="control-group" data-role="{{nic.desired.hwaddr}}" ng-repeat="nic in bond.desired.nics">
-						<div class="controls">
-							<span>{{nic.desired.hwaddr}} </span>
-							<a ng-click="removeNic(bond, $index)"> <i class="icon-remove"></i></a>
-						</div>
-					</div>
+                    </div>
+                  </div>
 
-					<div class="control-group">
-						<div class="controls">
-							<div class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown"><i class="icon-plus"></i> Add NIC</a>
-								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-									<li ng-class="{disabled: !nic.enabled}" ng-repeat="(hwaddr, nic) in availableNics">
-										<a ng-click="addNic(bond, hwaddr)">{{ hwaddr }}</a>
-									</li>
-									<li class="divider"></li>
-									<li><a ng-click="addAllAvailableResources(bond, 'nic')">Add all available</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</div>
+                  <div class="btn-group">
+                      <button class="dropdown-toggle btn btn-primary" data-toggle="dropdown"><i class="glyphicon glyphicon-plus"></i> Add role</button>
+                    <ul class="dropdown-menu" role="menu">
+                      <li ng-class="{disabled: !role.enabled}" ng-repeat="(id, role) in availableRoles">
+                        <a href="javascript:void(0);" ng-click="addNicRole(bond, id)">{{ role.name }}</a>
+                      </li>
+                      <li class="divider"></li>
+                      <li><a href="javascript:void(0);" ng-click="addAllAvailableResources(bond, 'nic_role')">Add all available</a></li>
+                    </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
 			</div>
 
-			<div class="span3">
+			<div class="col-md-3">
 				<div id="availableItemsAffix">
 				<button ng-click="createAggregation($event)" class="btn btn-success"
 				        ng-disabled="ngModel.nics.length <= ngModel.bonds.length"><i class="icon-plus"></i> Add bond

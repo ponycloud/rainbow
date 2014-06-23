@@ -18,23 +18,25 @@
   ]);
 
   module.controller('ImageListCtrl', ImageListCtrl = (function() {
-    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal'];
+    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal', '$location'];
 
-    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal) {
+    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal, $location) {
+      this.$location = $location;
       TenantImage.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(ImageList) {
         $scope.images = ImageList;
         return dataContainer.registerEntity('image', $scope.images);
       });
+      StoragePool.list().$promise.then(function(StoragePoolList) {
+        $scope.storagepools = StoragePoolList;
+        return dataContainer.registerEntity('storagepools', $scope.storagepools);
+      });
+      $scope.$location = $location;
       $scope.imageModal = $modal({
         scope: $scope,
         template: 'tenant/image/image-modal.tpl.html',
         show: false
-      });
-      StoragePool.list().$promise.then(function(StoragePoolList) {
-        $scope.storagepools = StoragePoolList;
-        return dataContainer.registerEntity('storagepools', $scope.storagepools);
       });
       $scope.open = function() {
         $scope.image = {
@@ -48,7 +50,6 @@
       };
       $scope.createImage = function() {
         var newImage;
-        console.log($scope.image);
         newImage = new TenantImage();
         newImage.desired = {
           'name': $scope.image.name,
@@ -166,15 +167,20 @@
       });
       $scope.open = function() {
         $scope.volumes = $scope.volumes.filter(function(item) {
-          if (!item.desired.image || item.desired.image === $routeParams.image) {
+          if (!(item.desired.image || item.desired.image === $routeParams.image)) {
             return item;
           }
         });
         return $scope.imageEditModal.show();
       };
-      $scope.close = function() {
+      $scope.close = function(reload) {
+        if (reload == null) {
+          reload = true;
+        }
         $scope.imageEditModal.hide();
-        $route.reload();
+        if (reload) {
+          $route.reload();
+        }
         return false;
       };
       $scope.volumeListOpen = function() {
@@ -213,14 +219,6 @@
           return $scope.backVolumes.push({
             desired: desired
           });
-        });
-      };
-      remove_volume = function(volume) {
-        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size;
-        $scope.storagepools[volume.desired.storage_pool].used = false;
-        $scope.storagepools[volume.desired.storage_pool].volumes = [];
-        return $scope.backVolumes = $scope.backVolumes.filter(function(item) {
-          return item.desired.uuid !== volume.desired.uuid;
         });
       };
       $scope.deallocate = function(storagepool) {
@@ -277,7 +275,15 @@
           'image': $routeParams.image
         };
         return TenantImage.patch(params, patch, function() {
-          return $scope.close();
+          return $scope.close(false);
+        });
+      };
+      remove_volume = function(volume) {
+        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size;
+        $scope.storagepools[volume.desired.storage_pool].used = false;
+        $scope.storagepools[volume.desired.storage_pool].volumes = [];
+        return $scope.backVolumes = $scope.backVolumes.filter(function(item) {
+          return item.desired.uuid !== volume.desired.uuid;
         });
       };
     }

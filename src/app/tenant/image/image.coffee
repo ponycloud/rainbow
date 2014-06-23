@@ -13,20 +13,25 @@ module.config ['$routeProvider', ($routeProvider) ->
 
 module.controller 'ImageListCtrl',
   class ImageListCtrl
-    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal']
+    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal', '$location']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal, @$location) ->
+      # Simple list of images
       TenantImage.list({'tenant': $routeParams.tenant}).$promise.then((ImageList) ->
         $scope.images = ImageList
         dataContainer.registerEntity('image', $scope.images)
       )
-
-      $scope.imageModal = $modal({scope: $scope, template: 'tenant/image/image-modal.tpl.html', show: false})
-
+      # List of storagepools (for the purpose of the modal)
+      # TODO Could be created on demand
       StoragePool.list().$promise.then((StoragePoolList) ->
         $scope.storagepools = StoragePoolList
         dataContainer.registerEntity('storagepools', $scope.storagepools)
       )
+
+      $scope.$location = $location
+
+     # Modal initialization
+      $scope.imageModal = $modal({scope: $scope, template: 'tenant/image/image-modal.tpl.html', show: false})
 
       $scope.open = () ->
         $scope.image = {'storagepools': {}}
@@ -36,8 +41,8 @@ module.controller 'ImageListCtrl',
         $scope.imageModal.hide()
         false
 
+      # Get data from the $scope.image
       $scope.createImage = () ->
-        console.log $scope.image
         newImage = new TenantImage()
         newImage.desired = {
           'name': $scope.image.name,
@@ -71,6 +76,7 @@ module.controller 'ImageListCtrl',
           #$scope.message("Image created", 'success')
         )
 
+      # Plain and simple delete
       $scope.deleteImage = (image, index) ->
         position = $scope.images.indexOf(image)
         params = {'tenant': $routeParams.tenant, 'image': image.desired.uuid}
@@ -99,7 +105,8 @@ module.controller 'ImageDetailCtrl',
       StoragePool.list().$promise.then((StoragePoolList) ->
         storagepools = StoragePoolList
         dataContainer.registerEntity('storagepools', $scope.storagepools)
-        # Create a 'dict' of storagepools
+
+        # Create a 'dict' of storagepools where keys are desired.uuids
         $scope.storagepools[storagepool.desired.uuid] = storagepool for storagepool in storagepools
 
         TenantImageVolume.list(criteria).$promise.then((TenantImageList) ->
@@ -110,7 +117,7 @@ module.controller 'ImageDetailCtrl',
               $scope.storagepools[volume.desired.storage_pool].used = true
 
               # Create an array of volumes for each storagepool
-              if !$scope.storagepools[volume.desired.storage_pool].volumes
+              unless $scope.storagepools[volume.desired.storage_pool].volumes
                 $scope.storagepools[volume.desired.storage_pool].volumes = []
                 $scope.storagepools[volume.desired.storage_pool].used_space = 0
               $scope.storagepools[volume.desired.storage_pool].volumes.push volume
@@ -128,15 +135,15 @@ module.controller 'ImageDetailCtrl',
       $scope.open = () ->
         $scope.volumes = $scope.volumes.filter(
           (item) ->
-            if !item.desired.image || item.desired.image == $routeParams.image
-              item
+            item unless item.desired.image or item.desired.image is $routeParams.image
         )
         $scope.imageEditModal.show()
 
       # Close modal dialog with image details
-      $scope.close = () ->
+      $scope.close = (reload=true) ->
         $scope.imageEditModal.hide()
-        $route.reload()
+        if reload
+            $route.reload()
         false
 
       $scope.volumeListOpen = () ->
@@ -173,19 +180,6 @@ module.controller 'ImageDetailCtrl',
             $scope.backVolumes.push {desired}
         )
 
-      # Utility function to clean a volume from various places
-      remove_volume = (volume) ->
-        # Remove from storagepools listing
-        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size
-        $scope.storagepools[volume.desired.storage_pool].used = false
-        $scope.storagepools[volume.desired.storage_pool].volumes = []
-        # Remove from backing volumes
-        $scope.backVolumes = $scope.backVolumes.filter(
-          (item) ->
-            item.desired.uuid != volume.desired.uuid
-        )
-
-
       $scope.deallocate = (storagepool) ->
         for volume in storagepool.volumes
           params = {'tenant': $routeParams.tenant, 'volume': volume.desired.uuid }
@@ -218,5 +212,18 @@ module.controller 'ImageDetailCtrl',
         params = {'tenant': $routeParams.tenant, 'image': $routeParams.image}
         TenantImage.patch(params, patch, () ->
           #$scope.message("Image modified", 'success')
-          $scope.close()
+          $scope.close(false)
+        )
+
+      # Utility function to clean a volume from various places
+      remove_volume = (volume) ->
+        # Remove from storagepools listing
+        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size
+        $scope.storagepools[volume.desired.storage_pool].used = false
+        $scope.storagepools[volume.desired.storage_pool].volumes = []
+
+        # Remove from backing volumes
+        $scope.backVolumes = $scope.backVolumes.filter(
+          (item) ->
+            item.desired.uuid != volume.desired.uuid
         )
