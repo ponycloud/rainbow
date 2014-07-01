@@ -55,26 +55,47 @@
         return newAffinityGroup.$save({
           'tenant': $routeParams.tenant
         }, function(response) {
+          $scope.affinityGroup.uuid = response.uuids.POST;
           $scope.affinityGroups.push({
-            'desired': {
-              'uuid': response.uuids.POST,
-              'name': $scope.affinityGroup.name
-            }
+            'desired': $scope.affinityGroup
           });
           return $scope.affinityGroupListModal.hide();
         });
       };
-      $scope.deleteAffinityGroup = function(affinityGroup, index) {
-        var params, position;
-        position = $scope.affinityGroups.indexOf(affinityGroup);
+      $scope.deleteAffinityGroup = function(affinityGroup) {
+        var params;
         params = {
           'tenant': $routeParams.tenant,
           'affinity_group': affinityGroup.desired.uuid
         };
         return TenantAffinityGroup["delete"](params, function() {
-          $scope.affinityGroups.splice(position, 1);
-          return $scope.message("Affinity group deleted", 'success');
+          return $scope.affinityGroups = $scope.affinityGroups.filter(function(item) {
+            return item.desired.uuid !== affinityGroup.desired.uuid;
+          });
         });
+      };
+      $scope.deleteSelected = function() {
+        var item, _i, _len, _ref, _results;
+        _ref = $scope.affinityGroups;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          item = _ref[_i];
+          if (item.toDelete) {
+            _results.push($scope.deleteAffinityGroup(item));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      };
+      $scope.setToDelete = function(state) {
+        var item, _i, _len, _ref;
+        _ref = $scope.affinityGroups;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          item = _ref[_i];
+          item.toDelete = state;
+        }
+        return $scope.allToDelete = state;
       };
     }
 
