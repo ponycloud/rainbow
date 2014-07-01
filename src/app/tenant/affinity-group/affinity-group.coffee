@@ -46,25 +46,20 @@ module.controller 'AffinityGroupListCtrl',
             $scope.affinityGroupListModal.hide()
           )
 
-      $scope.deleteAffinityGroup = (affinityGroup) ->
-        params = {'tenant': $routeParams.tenant, 'affinity_group': affinityGroup.desired.uuid}
+      $scope.deleteAffinityGroup = (uuid) ->
+        params = {'tenant': $routeParams.tenant, 'affinity_group': uuid}
         TenantAffinityGroup.delete(params, () ->
           $scope.affinityGroups = $scope.affinityGroups.filter(
             (item) ->
-              item.desired.uuid != affinityGroup.desired.uuid
+              item.desired.uuid != uuid
           )
           #$scope.message("Affinity group deleted", 'success')
         )
 
-      $scope.deleteSelected = () ->
-        for item in $scope.affinityGroups 
-            if item.toDelete
-                $scope.deleteAffinityGroup(item)
+      $scope.deleteSelected = (items) ->
+        for item in items
+          $scope.deleteAffinityGroup item
 
-      $scope.setToDelete = (state) ->
-          for item in $scope.affinityGroups
-              item.toDelete = state
-          $scope.allToDelete = state
 
 module.controller 'AffinityGroupDetailCtrl',
   class AffinityGroupDetailCtrl
@@ -76,11 +71,11 @@ module.controller 'AffinityGroupDetailCtrl',
       TenantInstance.list({'tenant': $routeParams.tenant}).$promise.then((allInstances) ->
         $scope.allInstances = allInstances
         $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
-       )
+      )
+      $scope.affinityGroupEditModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html', show: false})
+      $scope.instanceListModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/instance-list-modal.tpl.html', show: false})
 
-      $scope.affinityGroupEditModal = $modal({scope: $scope, template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html', show: false})
-      $scope.instanceListModal = $modal({scope: $scope, template: 'tenant/affinity-group/instance-list-modal.tpl.html', show: false})
-
+      console.log $scope.instanceListModal
 
       # Filter those instances that are not linked
       $scope.filterUsedInstances = (all, linked) ->
