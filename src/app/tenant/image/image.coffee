@@ -27,6 +27,13 @@ module.controller 'ImageListCtrl',
         $scope.storagepools = StoragePoolList
         dataContainer.registerEntity('storagepools', $scope.storagepools)
       )
+      $scope.filterStatus = (actual, expected) ->
+        expected = expected.toLowerCase()
+        if actual? and 'initializing'.search(expected) > -1
+          return true
+        if !actual? and 'ready'.search(expected) > -1
+          return true
+        return false
 
       $scope.$location = $location
 
