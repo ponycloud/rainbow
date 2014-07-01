@@ -79,3 +79,26 @@ h2 {
 	//@include animation(0s, 2s, fadeout);
 	-moz-animation:fadeout normal 1.5s infinite;
 }
+
+th.with-caret {
+    cursor: pointer;
+    cursor: hand;
+}
+
+th.with-caret:hover {
+    background-color: #f5f5f5;
+}
+
+th.with-caret:hover .caret {
+    opacity: 1;
+}
+
+.caret-reversed {
+    border-top-width: 0;
+    border-bottom: 4px solid #000000;
+}
+
+.caret-inactive {
+    color: black;
+    opacity: 0.4;
+}
