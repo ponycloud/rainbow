@@ -41,18 +41,30 @@ module.controller 'AffinityGroupListCtrl',
           newAffinityGroup.desired = {'name': $scope.affinityGroup.name, 'type': $scope.affinityGroup.type}
           newAffinityGroup.$save({'tenant': $routeParams.tenant}, (response) ->
             # Construct data to push to the list.
-            $scope.affinityGroups.push({'desired': {'uuid':response.uuids.POST, 'name': $scope.affinityGroup.name}})
+            $scope.affinityGroup.uuid = response.uuids.POST
+            $scope.affinityGroups.push({'desired': $scope.affinityGroup})
             $scope.affinityGroupListModal.hide()
           )
 
-      $scope.deleteAffinityGroup = (affinityGroup, index) ->
-        position = $scope.affinityGroups.indexOf(affinityGroup)
+      $scope.deleteAffinityGroup = (affinityGroup) ->
         params = {'tenant': $routeParams.tenant, 'affinity_group': affinityGroup.desired.uuid}
         TenantAffinityGroup.delete(params, () ->
-          $scope.affinityGroups.splice(position,1)
-          $scope.message("Affinity group deleted", 'success')
+          $scope.affinityGroups = $scope.affinityGroups.filter(
+            (item) ->
+              item.desired.uuid != affinityGroup.desired.uuid
+          )
+          #$scope.message("Affinity group deleted", 'success')
         )
 
+      $scope.deleteSelected = () ->
+        for item in $scope.affinityGroups 
+            if item.toDelete
+                $scope.deleteAffinityGroup(item)
+
+      $scope.setToDelete = (state) ->
+          for item in $scope.affinityGroups
+              item.toDelete = state
+          $scope.allToDelete = state
 
 module.controller 'AffinityGroupDetailCtrl',
   class AffinityGroupDetailCtrl
