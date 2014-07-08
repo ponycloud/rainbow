@@ -65,7 +65,24 @@ module.directive 'pcTable', ($parse, $filter, $compile) ->
       filtered = @filter(data, $scope.getFilter())
       sortFn = $scope.sortFields[$scope.currentSort]
       sorted = $filter('orderBy')(filtered, sortFn(), $scope.reverse)
+      if $scope.all
+        $scope.all = $scope.all.filter(
+          (item) ->
+            $scope.filterSearch sorted, item
+        )
+
       return sorted
+
+
+    $scope.filterSearch = (dict, pattern) ->
+      for k of dict
+        if typeof dict[k] == "object"
+          if $scope.filterSearch dict[k], pattern
+            return true
+        else if dict[k] == pattern
+          return true
+      return false
+
 
     $scope.getFilter = () ->
       return (value) ->
@@ -130,8 +147,8 @@ module.directive 'pcTable', ($parse, $filter, $compile) ->
         else
           value = @getFieldValue item, field
           value = '' if !value?
-          value = value.toLowerCase()
-          if value.search(model) > -1
+          value = value.toString().toLowerCase()
+          if value.search(model.toLowerCase()) > -1
             return true
 
       return false
