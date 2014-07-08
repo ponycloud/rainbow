@@ -8,27 +8,50 @@
 </style>
 
 <h1>Instances</h1>
-		
-<table class="table table-striped">
-	<thead>
-		<tr>
-			<th></th>
-			<th>Name</th>
-			<th>CPU</th>
-			<th>Memory</th>
-			<th>State</th>
-		</tr>
-	</thead>
-	<tr ng-repeat="instance in instances">
-		<td></td>
-		<td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
-		<td>{{instance.desired.vcpu}}</td>
-		<td><span class="label label">{{instance.desired.mem}}</span> <span class="animate">&raquo;</span> <span class="label label-info">2048</span> Mb</td>
-		<td>
-			<span class="label label-success">{{instance.desired.state}}</span> &raquo; <span class="label label-inverse">stopped</span>
-		</td>
-	</tr>
-
-
-
-</table>
+<div pc-multiactions>
+  <ul class="nav nav-pills">
+    <li>
+      <button class="btn btn-primary" ng-click="open()">
+        <i class="glyphicon glyphicon-plus icon-white"></i>·
+        New instance
+      </button>
+    </li>
+    <li class="pull-right">
+        <input class="form-control" ng-model="search" placeholder="Filter">
+    </li>
+    <li class="pull-right">
+        <pc-multieditbutton ></pc-multieditbutton>
+    </li>
+  </ul>
+	
+  <table class="table table-striped table-responsive table-hover" pc-table="{{search}}">
+    <thead>
+      <tr>
+        <th pc-multiall />
+        <th pc-column="desired.name">Name</th>
+        <th>CPU</th>
+        <th pc-column="desired.mem">Memory</th>
+        <th pc-column="desired.state">State</th>
+      </tr>
+    </thead>
+    <tr ng-repeat="instance in getFiltered(instances)">
+      <td pc-multicheck="{{ instance.desired.uuid }}"/>
+      <td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
+      <td>
+        <span class="label label-info">{{instance.desired.vcpu}} virtual</span>
+        <span class="label label-warning">{{instance.desired.rcpu}} reserved</span>
+      </td>
+      <td><span class="label label-default">{{instance.desired.mem}}</span> <span class="animate">&raquo;</span> <span class="label label-info">2048</span> Mb</td>
+      <td>
+        <span class="label label-default">{{instance.desired.state}}</span> &raquo; <span class="label label-info">stopped</span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="4" ng-show="editMode">
+        <button class="btn btn-danger" ng-click="deleteSelected(getSelected())">
+          <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>

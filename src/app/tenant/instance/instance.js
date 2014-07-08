@@ -20,7 +20,7 @@
   module.controller('InstanceListCtrl', InstanceListCtrl = (function() {
     InstanceListCtrl.inject = ['$scope', '$routeParams', 'TenantInstance', 'dataContainer'];
 
-    function InstanceListCtrl($scope, $routeParams, TenantInstance, dataContainer) {
+    function InstanceListCtrl($scope, $routeParams, TenantInstance, dataContainer, $modal) {
       var list;
       list = TenantInstance.list({
         tenant: $routeParams.tenant

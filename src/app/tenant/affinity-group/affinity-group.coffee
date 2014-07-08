@@ -15,7 +15,7 @@ module.controller 'AffinityGroupListCtrl',
   class AffinityGroupListCtrl
     @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'dataContainer']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal, @$location) ->
       TenantAffinityGroup.list({'tenant': $routeParams.tenant}).$promise.then((affinityGroupList) ->
         $scope.affinityGroups = affinityGroupList
         dataContainer.registerEntity('affinityGroup', $scope.affinityGroups)
@@ -74,8 +74,6 @@ module.controller 'AffinityGroupDetailCtrl',
       )
       $scope.affinityGroupEditModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html', show: false})
       $scope.instanceListModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/instance-list-modal.tpl.html', show: false})
-
-      console.log $scope.instanceListModal
 
       # Filter those instances that are not linked
       $scope.filterUsedInstances = (all, linked) ->

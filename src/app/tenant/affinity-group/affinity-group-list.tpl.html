@@ -15,30 +15,29 @@
         </li>
     </ul>
 
-    <table class="table table-striped table-responsive table-hover">
+    <table class="table table-striped table-responsive table-hover" pc-table="{{search}}">
     <thead>
     <tr>
      <th pc-multiall />
-     <th>Name</th>
-     <th>Type</th>
-     <th>Actions</th>
+     <th pc-column="desired.name">Name</th>
+     <th pc-column="desired.type">Type</th>
     </tr>
     </thead>
     <tbody>
 
-    <tr ng-repeat="affinityGroup in affinityGroups | filter: search | orderBy:predicate:reverse">
+    <tr ng-repeat="affinityGroup in getFiltered(affinityGroups)">
         <td pc-multicheck="{{ affinityGroup.desired.uuid }}"/>
-        <td>{{affinityGroup.desired.name}}</td>
+        <td>
+          <a href="#/{{tenant}}/affinity-group/{{affinityGroup.desired.uuid}}">
+            {{affinityGroup.desired.name}}
+          </a>
+        </td>
         <td>{{affinityGroup.desired.type}}</td>
-
-    <td><a class="btn btn-success" href="#/{{tenant}}/affinity-group/{{affinityGroup.desired.uuid}}">
-            <i class="icon-zoom-in icon-white"></i> View
-        </a>
     </tr>
     <tr>
      <td colspan="4" ng-show="editMode">
        <button class="btn btn-danger" ng-click="deleteSelected(getSelected())">
-         <i class="icon-plus-sign icon-white"></i>Delete selected
+         <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
        </button>
     </td>
 </tr>
@@ -46,4 +45,3 @@
 
 
 </div>
-

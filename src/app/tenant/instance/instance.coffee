@@ -13,7 +13,7 @@ module.config ['$routeProvider', ($routeProvider) ->
 module.controller 'InstanceListCtrl',
   class InstanceListCtrl
     @inject = ['$scope', '$routeParams', 'TenantInstance', 'dataContainer']
-    constructor: ($scope, $routeParams, TenantInstance, dataContainer) ->
+    constructor: ($scope, $routeParams, TenantInstance, dataContainer, $modal) ->
       list = TenantInstance.list {tenant: $routeParams.tenant}
       list.$promise.then (i) ->
         $scope.instances = i
