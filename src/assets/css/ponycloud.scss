@@ -102,3 +102,7 @@ th.with-caret:hover .caret {
     color: black;
     opacity: 0.4;
 }
+
+a[ng-click] {
+  cursor: pointer;
+}
