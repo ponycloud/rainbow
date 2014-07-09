@@ -67,7 +67,8 @@ Example:
         $scope.getFiltered = function(data) {
           var filtered, sortFn, sorted;
           filtered = this.filter(data, $scope.getFilter());
-          sortFn = $scope.sortFields[$scope.currentSort];
+          sortFn = $scope.sortFields[$scope.currentSort] !== void 0 ? $scope.sortFields[$scope.currentSort] : $scope.sortFields[Object.keys($scope.sortFields)[0]];
+          console.log(sortFn);
           sorted = $filter('orderBy')(filtered, sortFn(), $scope.reverse);
           if ($scope.all) {
             $scope.all = $scope.all.filter(function(item) {
