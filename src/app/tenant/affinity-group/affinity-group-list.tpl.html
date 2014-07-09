@@ -32,7 +32,7 @@
             {{affinityGroup.desired.name}}
           </a>
         </td>
-        <td>{{affinityGroup.desired.type}}</td>
+        <td><span class="label" ng-class="{'affinity':'label-success', 'anti-affinity':'label-danger'}[affinityGroup.desired.type]">{{affinityGroup.desired.type}}</span></td>
     </tr>
     <tr>
      <td colspan="4" ng-show="editMode">
