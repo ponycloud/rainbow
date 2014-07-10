@@ -51,6 +51,18 @@
         <button class="btn btn-danger" ng-click="deleteSelected(getSelected())">
           <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
         </button>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+            Set state ({{selected.length}}) <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a ng-click="setStateSelected(getSelected(), 'running')">Running</a></li>
+            <li><a ng-click="setStateSelected(getSelected(), 'paused')">Paused</a></li>
+            <li><a ng-click="setStateSelected(getSelected(), 'stopped')">Stopped</a></li>
+          </ul>
+        </div>
+
       </td>
     </tr>
   </table>
