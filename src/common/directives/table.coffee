@@ -64,7 +64,6 @@ module.directive 'pcTable', ($parse, $filter, $compile) ->
     $scope.getFiltered = (data) ->
       filtered = @filter(data, $scope.getFilter())
       sortFn = unless $scope.sortFields[$scope.currentSort] is undefined then $scope.sortFields[$scope.currentSort] else $scope.sortFields[Object.keys($scope.sortFields)[0]]
-      console.log sortFn
       sorted = $filter('orderBy')(filtered, sortFn(), $scope.reverse)
       if $scope.all
         $scope.all = $scope.all.filter(
