@@ -1,0 +1,49 @@
+<h1>Switches</h1>
+<div pc-multiactions>
+    <ul class="nav nav-pills">
+        <li>
+            <button class="btn btn-primary" ng-click="open()">
+                <i class="glyphicon glyphicon-plus icon-white"></i> 
+                New switch
+            </button>
+        </li>
+        <li class="pull-right">
+            <input class="form-control" ng-model="search" placeholder="Filter">
+        </li>
+        <li class="pull-right">
+            <pc-multieditbutton ></pc-multieditbutton>
+        </li>
+    </ul>
+
+    <table class="table table-striped table-responsive table-hover" pc-table="{{search}}">
+    <thead>
+    <tr>
+     <th pc-multiall />
+     <th pc-column="desired.name">Name</th>
+     <th pc-column="desired.type">Type</th>
+     <th pc-column="desired.tag">Tag</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    <tr ng-repeat="switch in getFiltered(switches)">
+        <td pc-multicheck="{{ switch.desired.uuid }}"/>
+        <td>
+          <a href="#/{{tenant}}/switch/{{switch.desired.uuid}}">
+            {{switch.desired.name}}
+          </a>
+        </td>
+        <td>{{switch.desired.type}}</td>
+        <td>{{switch.desired.tag}}</td>
+    </tr>
+    <tr>
+     <td colspan="4" ng-show="editMode">
+       <button class="btn btn-danger" ng-click="deleteSelected(getSelected())">
+         <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
+       </button>
+    </td>
+</tr>
+</table>
+
+
+</div>

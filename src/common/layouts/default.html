@@ -86,8 +86,8 @@ body {
 
           <li class="nav-header">Networking</li>
 
-          <li ng-class="getClass('switches')">
-            <a>
+          <li ng-class="{ active: path[2] == 'switch' }">
+          <a href="#/{{tenant}}/switch">
               <span class="fa fa-sitemap"></span>
               Switches
             </a>
