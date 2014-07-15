@@ -5,7 +5,7 @@
        <ul class="nav nav-pills">
         <li>
           <button class="btn btn-primary" ng-click="open()">
-              <i class="icon-edit icon-white"></i>
+              <i class="glyphicon glyphicon-pencil"></i>
               Modify
           </button>
         </li>
@@ -32,7 +32,7 @@
       <ul class="nav nav-pills">
        <li>
          <button class="btn btn-primary" ng-click="networkModalOpen()">
-             <i class="icon-edit icon-white"></i>
+             <i class="fa fa-signal"></i>
              Add network
          </button>
         </li>
@@ -57,7 +57,11 @@
 
         <tr ng-repeat="network in getFiltered(networks)">
           <td pc-multicheck="{{ network.desired.uuid }}"/>
-          <td><a href="#/{{tenant}}/switch/{{switch.desired.uuid}}/network/{{network.desired.uuid}}">{{network.desired.range}}</a></td>
+          <td>
+            <a href="#/{{tenant}}/switch/{{switch.desired.uuid}}/network/{{network.desired.uuid}}">
+              {{network.desired.range}}
+            </a>
+          </td>
           <td>{{network.desired.vlan_tag}}</td>
         </tr>
         <tr>
