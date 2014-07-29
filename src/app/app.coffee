@@ -11,9 +11,10 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
 ]
 
 app_module = angular.module 'app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'mgcrea.ngStrap',
-    'jm.i18next',  'tenantInstance', 'tenantAffinityGroup', 'tenantSwitch', 'tenantNetwork',
+    'jm.i18next', 'mgo-angular-wizard', 'ui.sortable',
+    'tenantInstance', 'tenantAffinityGroup', 'tenantSwitch', 'tenantNetwork',
     'platformTenant',
-    'commonControllers', 'rainbowServices', 'rainbowDirectives', 'ngTable',
+    'commonControllers', 'rainbowServices', 'rainbowDirectives',
     'tenantImage', 'tenantDashboard', 'hostNetwork', 'appLogin', 'host']
 
 app_module.config ['$routeProvider', '$locationProvider', ($routeProvider, $locationProvider) ->
