@@ -2,7 +2,7 @@
 (function() {
   var module;
 
-  module = angular.module('rainbow.config', []);
+  module = angular.module('rainbowConfig', []);
 
   module.constant('WEB_URL', 'http://localhost:8080');
 
