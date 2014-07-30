@@ -1,0 +1,174 @@
+<h1>Image "{{image.desired.name}}"</h1>
+
+<div class="span4 well">
+    <h2>Details:</h2>
+     <ul class="nav nav-pills">
+      <li>
+        <button class="btn btn-primary" ng-click="open()">
+            <i class="icon-edit icon-white"></i>
+            Modify
+        </button>
+      </li>
+    </ul>
+
+   <table class="table table-striped">
+      <tr>
+        <th>Name</th>
+        <td>{{image.desired.name}}</td>
+      </tr>
+      <tr>
+        <th>Type</th>
+        <td>{{image.desired.type}}</td>
+      </tr>
+     <tr>
+        <th>Description</th>
+        <td>{{image.desired.description}}</td>
+      </tr>
+      <tr ng-show="image.desired.source_uri">
+        <th>Status</th>
+        <td>
+            <span class="label label-info" data-toggle="tooltip" title="{{image.desired.source_uri}}">
+                Initializing
+            </span>
+        </td>
+      </tr>
+      <tr>
+        <th>Size</th>
+        <td>
+            {{image.size|number}} MB
+            <span class="label label-warning" ng-show="!image.size">Needs to be defined</span>
+        </td>
+      </tr>
+ 
+    </table>
+</div>
+
+<div class="span6 well">
+    <h2>Available for storage pools:</h2>
+    <ul class="nav nav-pills">
+      <li>
+        <button class="btn btn-primary" ng-click="volume_list_open()">
+            <i class="icon-edit icon-white"></i>
+            Manage volumes
+        </button>
+      </li>
+    </ul>
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>Storage Pool</th>
+        <th>Used space</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+        <tbody>
+          <tr ng-repeat="storagepool in storagepools">
+             <td>{{storagepool.desired.name}}</a></td>
+             <td>{{(storagepool.used_space || 0)|number}} MB</td>
+             <td>
+                 <button type="button" class="btn-success btn" ng-show="!storagepool.used" ng-click="allocate(storagepool, image.size)">Allocate</button>
+                 <button type="button" class="btn-danger btn" ng-show="storagepool.used" ng-click="deallocate(storagepool)">Deallocate</button>
+             </td>
+          </tr>
+      </tbody>
+    </table>
+</div>
+
+
+<div modal="volumeListModal" close="volume_list_close()" options="opts">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="volume_list_close()">×</button>
+      <h3 id="myModalLabel">Manage volumes</h3>
+    </div>
+    <div class="modal-body">
+
+        <div class="alert" ng-if="!back_volumes.length">
+            No volumes to unlink from this image.
+        </div>
+        <table class="table table-striped" ng-if="back_volumes">
+
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Storage pool</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="volume in back_volumes">
+            <td><a href="#/{{tenant}}/volume/{{volume.desired.uuid}}">{{volume.desired.name}}</a></td>
+            <td>{{volume.desired.size|number}} MB</td>
+            <td>{{storagepools[volume.desired.storage_pool].desired.name}}</td>
+            <td><button type="button" ng-if="volume.desired.image" class="btn-danger btn" ng-click="unlink(volume)">Unlink</button></td>
+          </tr>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="volume_list_close()">Close</button>
+    </div>
+
+</div>
+
+<div modal="imageModal" close="close()" options="opts">
+  <form class="form-horizontal modal-form" ng-submit="editImage()">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+      <h3 id="myModalLabel">Modify image</h3>
+    </div>
+    <div class="modal-body">
+        <div class="control-group">
+          <label class="control-label">Name:</label>
+          <div class="controls">
+            <input type="text" name="name" ng-model="image.desired.name">
+          </div>
+        </div>
+
+        <div class="control-group">
+              <label class="control-label">Type of image:</label>
+          <div class="controls">
+            <div class="btn-group">
+                <button type="button" class="btn" ng-model="image.desired.type" btn-radio="'disk'">Disk</button>
+                <button type="button" class="btn" ng-model="image.desired.type" btn-radio="'cdrom'">CD-ROM</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+              <label class="control-label">Description:</label>
+          <div class="controls">
+            <div class="btn-group">
+                <textarea ng-model="image.desired.description"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group info">
+          <label class="control-label">Source URI:</label>
+          <div class="controls">
+            <input type="text" name="name" ng-model="image.desired.source_uri">
+
+            <span class="help-line label label-info" ng-show="image.desired.source_uri">Image is initializing</span>
+            <span class="help-inline">If changed, image will be reinitialized.</span>
+          </div>
+        </div>
+
+        <div class="control-group warning">
+          <label class="control-label">Size:</label>
+          <div class="controls">
+            <input type="text" name="size" ng-model="image.size">
+
+            <span class="help-line label label-warning" ng-show="image.size">This should not be changed</span>
+            <span class="help-line label label-warning" ng-show="!image.size">Needs to be defined</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+          <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+        </div>
+      </form>
+</div>
+

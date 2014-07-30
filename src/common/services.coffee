@@ -1,6 +1,6 @@
 s = angular.module "rainbowServices"
 methods = {"list":  {method:"GET", isArray:false}, "query": {method: "GET", isArray: false}}
-options = {stripTrailingSlashes: false}
+options = {"stripTrailingSlashes": false}
 s.factory "StoragePool", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	port_replace = {}
 	port_replace[WEB_PORT] = ":" + WEB_PORT

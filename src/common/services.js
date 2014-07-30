@@ -16,7 +16,7 @@
   };
 
   options = {
-    stripTrailingSlashes: false
+    "stripTrailingSlashes": false
   };
 
   s.factory("StoragePool", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {

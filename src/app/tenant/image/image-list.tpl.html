@@ -1,15 +1,110 @@
-<h1>List of image</h1>
+<h1>List of images</h1>
+
+<ul class="nav nav-pills">
+	<li>
+		<button class="btn btn-primary" ng-click="open()">
+        <i class="icon-plus-sign icon-white"></i> New image
+    </button>
+	</li>
+</ul>
 
 <table class="table table-striped">
 	<thead>
 	<tr>
 		<th>Name</th>
+		<th>Type</th>
+		<th>Status</th>
+		<th>Actions</th>
 	</tr>
 	</thead>
 	<tbody>
+	
 	<tr ng-repeat="image in images">
 		<td>{{image.desired.name}}</td>
+		<td>{{image.desired.type}}</td>
+    <td>
+        <span ng-show="image.desired.source_uri" class="label label-info">
+            Initializing
+        </span>
+        <span ng-show="!image.desired.source_uri" class="label label-success">
+            Ready
+        </span>
+    </td>
+    <td><a class="btn btn-success" href="#/{{tenant}}/image/{{image.desired.uuid}}">
+            <i class="icon-zoom-in icon-white"></i> View
+        </a>
+		<button type="button" class="btn-danger btn" ng-click="deleteImage(image)">
+        <i class="icon-trash icon-white"></i> Delete
+    </button></td>
 	</tr>
 	</tbody>
-
 </table>
+
+<div modal="imageModal" close="close()" options="opts">
+	<form class="form-horizontal modal-form" ng-submit="createImage()">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
+			<h3 id="myModalLabel">Create image</h3>
+		</div>
+		<div class="modal-body">
+				<div class="control-group">
+					<label class="control-label">Name:</label>
+					<div class="controls">
+						<input type="text" name="name" ng-model="image.name">
+          </div>
+        </div>
+
+        <div class="control-group">
+              <label class="control-label">Type of image:</label>
+					<div class="controls">
+            <div class="btn-group">
+                <button type="button" class="btn" ng-model="image.type" btn-radio="'disk'">Disk</button>
+                <button type="button" class="btn" ng-model="image.type" btn-radio="'cdrom'">CD-ROM</button>
+            </div>
+					</div>
+				</div>
+
+        <div class="control-group">
+            <label class="control-label">Storage pools:</label>
+            <div class="controls">
+              <ul class="unstyled">
+                <li ng-repeat="storagepool in storagepools">
+                <label class="checkbox">
+                     <input type="checkbox" ng-model="image.storagepools[storagepool.desired.uuid]">
+                     {{storagepool.desired.name}}
+                 </label>
+                </li>
+              </ul>
+            </div>
+        </div>
+				<div class="control-group">
+					<label class="control-label">URL to initialize from:</label>
+					<div class="controls">
+						<input type="text" name="url" placeholder="https://example.com/image.iso" ng-model="image.source_uri">
+          </div>
+        </div>
+
+				<div class="control-group">
+					<label class="control-label">Size:</label>
+					<div class="controls">
+						<input type="text" name="size" class="input-mini" ng-model="image.size" placeholder="in MB">
+          </div>
+        </div>
+
+
+        <div class="control-group">
+              <label class="control-label">Description:</label>
+          <div class="controls">
+            <div class="btn-group">
+                <textarea ng-model="image.description"></textarea>
+            </div>
+          </div>
+				</div>
+
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
+			<button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+		</div>
+	</form>
+</div>

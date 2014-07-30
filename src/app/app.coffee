@@ -13,7 +13,7 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
 app_module = angular.module 'app', ['ngRoute', 'ngResource',
     'rainbowServices', 'rainbowDirectives', 
     '$strap.directives', 'jm.i18next', 'ui.bootstrap', 'tenant-instance', 
-    'tenant-cluster', 'platform-tenant', 'common-controllers', 'tenant-image', 
+    'tenant-affinity-group', 'platform-tenant', 'common-controllers', 'tenant-image', 
     'tenant-dashboard', 'host-network', 'app-login', 'host']
 
 app_module.config ['$routeProvider', '$locationProvider', '$httpProvider', 'authInterceptorProvider', ($routeProvider, $locationProvider, $httpProvider, authInterceptor) ->
