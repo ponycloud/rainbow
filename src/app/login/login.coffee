@@ -19,11 +19,6 @@ module.controller 'LoginCtrl',
 
       $scope.login = () ->
         $scope.$parent.setError()
-        console.log @username, @password
         l = auth.login @username, @password
-        l.then ((login) ->
-            console.log login
-            auth.setUserToken login.data
-            newPath = sessionStorage.getItem 'loginUrlRedirect'
-            $location.path newPath ? '/tenant'),
-        $scope.loginError
+        newPath = sessionStorage.getItem 'loginUrlRedirect'
+        $location.path newPath ? '/tenant'

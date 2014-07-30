@@ -27,17 +27,12 @@
         return $scope.$parent.setError(error.data);
       };
       $scope.login = function() {
-        var l;
+        var l, newPath;
         $scope.$parent.setError();
         console.log(this.username, this.password);
         l = auth.login(this.username, this.password);
-        return l.then((function(login) {
-          var newPath;
-          console.log(login);
-          auth.setUserToken(login.data);
-          newPath = sessionStorage.getItem('loginUrlRedirect');
-          return $location.path(newPath != null ? newPath : '/tenant');
-        }), $scope.loginError);
+        newPath = sessionStorage.getItem('loginUrlRedirect');
+        return $location.path(newPath != null ? newPath : '/tenant');
       };
     }
 
