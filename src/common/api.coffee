@@ -105,6 +105,25 @@ class StoragePool extends Entity
     return new Disk this, "/children/disk/%id/", id
 
 
+class AffinityGroup extends Entity
+  addInstance: (data, id) ->
+    _instance = new Instance this, "/children/instance/%id/"
+    @_add "add", "/children/instance/%id",data,"uuid",_instance.id
+    return _instance
+
+  removeInstance: (uuid) ->
+    @_remove "/children/instance/%id", uuid
+
+  replaceInstance: (uuid, newData) ->
+    @_replace "/children/instance/%id/desired", uuid, newData
+
+  mergeInstance: (uuid, newData) ->
+    @_merge "/children/instance/%id/desired", uuid, newData
+
+  Instance: (id) ->
+    return new Instance this, "/children/instance/%id/", id
+
+
 class Image extends Entity
   addVolume: (data, id) ->
     _volume = new Volume this, "/children/volume/%id/"
@@ -123,8 +142,6 @@ class Image extends Entity
   Volume: (id) ->
     return new Volume this, "/children/volume/%id/", id
 
-
-class Cluster extends Entity
 
 class Disk extends Entity
 
@@ -380,22 +397,22 @@ class Tenant extends Entity
   Member: (id) ->
     return new Member this, "/children/member/%id/", id
 
-  addInstance: (data, id) ->
-    _instance = new Instance this, "/children/instance/%id/"
-    @_add "add", "/children/instance/%id",data,"uuid",_instance.id
-    return _instance
+  addAffinityGroup: (data, id) ->
+    _affinitygroup = new AffinityGroup this, "/children/affinity-group/%id/"
+    @_add "add", "/children/affinity-group/%id",data,"uuid",_affinitygroup.id
+    return _affinitygroup
 
-  removeInstance: (uuid) ->
-    @_remove "/children/instance/%id", uuid
+  removeAffinityGroup: (uuid) ->
+    @_remove "/children/affinity-group/%id", uuid
 
-  replaceInstance: (uuid, newData) ->
-    @_replace "/children/instance/%id/desired", uuid, newData
+  replaceAffinityGroup: (uuid, newData) ->
+    @_replace "/children/affinity-group/%id/desired", uuid, newData
 
-  mergeInstance: (uuid, newData) ->
-    @_merge "/children/instance/%id/desired", uuid, newData
+  mergeAffinityGroup: (uuid, newData) ->
+    @_merge "/children/affinity-group/%id/desired", uuid, newData
 
-  Instance: (id) ->
-    return new Instance this, "/children/instance/%id/", id
+  AffinityGroup: (id) ->
+    return new AffinityGroup this, "/children/affinity-group/%id/", id
 
   addImage: (data, id) ->
     _image = new Image this, "/children/image/%id/"
@@ -448,22 +465,22 @@ class Tenant extends Entity
   Volume: (id) ->
     return new Volume this, "/children/volume/%id/", id
 
-  addCluster: (data, id) ->
-    _cluster = new Cluster this, "/children/cluster/%id/"
-    @_add "add", "/children/cluster/%id",data,"uuid",_cluster.id
-    return _cluster
+  addInstance: (data, id) ->
+    _instance = new Instance this, "/children/instance/%id/"
+    @_add "add", "/children/instance/%id",data,"uuid",_instance.id
+    return _instance
 
-  removeCluster: (uuid) ->
-    @_remove "/children/cluster/%id", uuid
+  removeInstance: (uuid) ->
+    @_remove "/children/instance/%id", uuid
 
-  replaceCluster: (uuid, newData) ->
-    @_replace "/children/cluster/%id/desired", uuid, newData
+  replaceInstance: (uuid, newData) ->
+    @_replace "/children/instance/%id/desired", uuid, newData
 
-  mergeCluster: (uuid, newData) ->
-    @_merge "/children/cluster/%id/desired", uuid, newData
+  mergeInstance: (uuid, newData) ->
+    @_merge "/children/instance/%id/desired", uuid, newData
 
-  Cluster: (id) ->
-    return new Cluster this, "/children/cluster/%id/", id
+  Instance: (id) ->
+    return new Instance this, "/children/instance/%id/", id
 
   addSwitch: (data, id) ->
     _switch = new Switch this, "/children/switch/%id/"
@@ -618,18 +635,10 @@ class Api extends Entity
     return new Tenant null, "/tenant/#{_tenant}/", _tenant
   @patchTenantMember: (_tenant, _member) ->
     return new Member null, "/tenant/#{_tenant}/member/#{_member}/", _member
-  @patchTenantInstance: (_tenant, _instance) ->
-    return new Instance null, "/tenant/#{_tenant}/instance/#{_instance}/", _instance
-  @patchTenantInstanceVdisk: (_tenant, _instance, _vdisk) ->
-    return new Vdisk null, "/tenant/#{_tenant}/instance/#{_instance}/vdisk/#{_vdisk}/", _vdisk
-  @patchTenantInstanceCluster: (_tenant, _instance, _cluster) ->
-    return new Cluster null, "/tenant/#{_tenant}/instance/#{_instance}/cluster/#{_cluster}/", _cluster
-  @patchTenantInstanceVnic: (_tenant, _instance, _vnic) ->
-    return new Vnic null, "/tenant/#{_tenant}/instance/#{_instance}/vnic/#{_vnic}/", _vnic
-  @patchTenantInstanceVnicAddress: (_tenant, _instance, _vnic, _address) ->
-    return new Address null, "/tenant/#{_tenant}/instance/#{_instance}/vnic/#{_vnic}/address/#{_address}/", _address
-  @patchTenantInstanceEvent: (_tenant, _instance, _event) ->
-    return new Event null, "/tenant/#{_tenant}/instance/#{_instance}/event/#{_event}/", _event
+  @patchTenantAffinityGroup: (_tenant, _affinitygroup) ->
+    return new AffinityGroup null, "/tenant/#{_tenant}/affinity-group/#{_affinitygroup}/", _affinitygroup
+  @patchTenantAffinityGroupInstance: (_tenant, _affinitygroup, _instance) ->
+    return new Instance null, "/tenant/#{_tenant}/affinity-group/#{_affinitygroup}/instance/#{_instance}/", _instance
   @patchTenantImage: (_tenant, _image) ->
     return new Image null, "/tenant/#{_tenant}/image/#{_image}/", _image
   @patchTenantImageVolume: (_tenant, _image, _volume) ->
@@ -640,10 +649,18 @@ class Api extends Entity
     return new Volume null, "/tenant/#{_tenant}/volume/#{_volume}/", _volume
   @patchTenantVolumeVdisk: (_tenant, _volume, _vdisk) ->
     return new Vdisk null, "/tenant/#{_tenant}/volume/#{_volume}/vdisk/#{_vdisk}/", _vdisk
-  @patchTenantCluster: (_tenant, _cluster) ->
-    return new Cluster null, "/tenant/#{_tenant}/cluster/#{_cluster}/", _cluster
-  @patchTenantClusterInstance: (_tenant, _cluster, _instance) ->
-    return new Instance null, "/tenant/#{_tenant}/cluster/#{_cluster}/instance/#{_instance}/", _instance
+  @patchTenantInstance: (_tenant, _instance) ->
+    return new Instance null, "/tenant/#{_tenant}/instance/#{_instance}/", _instance
+  @patchTenantInstanceVdisk: (_tenant, _instance, _vdisk) ->
+    return new Vdisk null, "/tenant/#{_tenant}/instance/#{_instance}/vdisk/#{_vdisk}/", _vdisk
+  @patchTenantInstanceAffinityGroup: (_tenant, _instance, _affinitygroup) ->
+    return new AffinityGroup null, "/tenant/#{_tenant}/instance/#{_instance}/affinity-group/#{_affinitygroup}/", _affinitygroup
+  @patchTenantInstanceVnic: (_tenant, _instance, _vnic) ->
+    return new Vnic null, "/tenant/#{_tenant}/instance/#{_instance}/vnic/#{_vnic}/", _vnic
+  @patchTenantInstanceVnicAddress: (_tenant, _instance, _vnic, _address) ->
+    return new Address null, "/tenant/#{_tenant}/instance/#{_instance}/vnic/#{_vnic}/address/#{_address}/", _address
+  @patchTenantInstanceEvent: (_tenant, _instance, _event) ->
+    return new Event null, "/tenant/#{_tenant}/instance/#{_instance}/event/#{_event}/", _event
   @patchTenantSwitch: (_tenant, _switch) ->
     return new Switch null, "/tenant/#{_tenant}/switch/#{_switch}/", _switch
   @patchTenantSwitchVnic: (_tenant, _switch, _vnic) ->
