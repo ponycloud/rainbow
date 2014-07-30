@@ -2,70 +2,92 @@
 (function() {
   var factoryFunction, module;
 
-  module = angular.module('rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi', 'rainbow.config']);
+  module = angular.module('rainbowServices', ['rainbowConfig']);
 
   factoryFunction = function($http, $q, $timeout, WEB_URL, API_SUFFIX) {
     return {
       serverUrl: WEB_URL + API_SUFFIX,
+      getToken: function(id) {
+        return localStorage.getItem(id + '-token');
+      },
+      getTokenValidity: function(id) {
+        return localStorage.getItem(id + '-valid');
+      },
+      isTokenValid: function(id) {
+        return this.getTokenValidity(id) > Date.now() / 1000;
+      },
       getUserToken: function() {
-        return localStorage.getItem('user');
+        return this.getToken('user');
       },
       getTenantToken: function(tenant) {
-        var me, promise, token;
-        token = localStorage.getItem('tenant-' + tenant);
-        if (!token || token.valid < Date.now()) {
-          promise = $http.get(this.serverUrl + '/tenant/' + tenant + '/token', {
-            'headers': {
-              'Authorization': 'Token ' + this.getUserToken()
-            }
-          });
-          me = this;
-          $q.all([promise]).then(function(items) {
-            console.log(items[0].data.token);
-            return me.setTenantToken(tenant, JSON.stringify(items[0].data));
-          });
-          return JSON.parse(localStorage.getItem("tenant-" + tenant))['token'];
+        var id, response, token;
+        id = 'tenant-' + tenant;
+        token = this.getToken(id);
+        if ((token == null) || !this.isTokenValid(id)) {
+          response = this.retreiveToken('tenant', this.getUserToken(), tenant);
+          this.setToken(id, response);
         }
-        return JSON.parse(token)['token'];
+        return this.getToken(id);
       },
-      setUserToken: function(token) {
-        var timeout;
-        localStorage.setItem('user', token.token);
-        console.log(token);
-        timeout = token.valid * 1000 - new Date().getTime() - 30 * 1000;
-        return console.log('Refresh timeout ', timeout);
+      retreiveToken: function(type, auth, tenant) {
+        var authHeader, authUrl, responseText;
+        if (type === 'tenant') {
+          authHeader = 'Token ' + auth;
+          authUrl = this.serverUrl + '/tenant/' + tenant + '/token';
+        } else if (type === 'user-token') {
+          authHeader = 'Token ' + auth;
+          authUrl = this.serverUrl + '/token';
+        } else {
+          authHeader = 'Basic ' + auth;
+          authUrl = this.serverUrl + '/token';
+        }
+        responseText = $.ajax({
+          type: "GET",
+          url: authUrl,
+          async: false,
+          headers: {
+            'Authentication': authHeader
+          },
+          dataType: 'json'
+        }).responseText;
+        return JSON.parse(responseText);
       },
-      refreshUserToken: function() {
-        var auth;
-        auth = 'Token ' + this.getUserToken();
-        return this.getToken(auth);
+      setToken: function(id, data) {
+        localStorage.setItem(id + '-token', data.token);
+        localStorage.setItem(id + '-valid', data.valid);
+        return this.setRefreshTokenTimer(id);
       },
-      setUserTokenRefreshTimeout: function() {},
-      setTenantToken: function(tenant, token) {
-        return localStorage.setItem("tenant-" + tenant, token);
+      setRefreshTokenTimer: function(id) {
+        var doRefresh, timeout;
+        if (!this.getToken(id) || !this.isTokenValid(id)) {
+          return false;
+        }
+        timeout = (this.getTokenValidity(id) * 1000 - Date.now()) * 0.9;
+        doRefresh = function(me) {
+          return function() {
+            return me.refreshToken(id);
+          };
+        };
+        return $timeout(doRefresh(this), timeout);
       },
-      clearAllTokens: function() {
-        return localStorage.clear();
-      },
-      getUsername: function() {
-        return localStorage.getItem('username');
+      refreshToken: function(id) {
+        var token;
+        if (id === 'user') {
+          token = this.retreiveToken('user-token', this.getUserToken());
+        } else {
+          token = this.retreiveToken('tenant', this.getUserToken(), id.replace('tenant-', ''));
+        }
+        return this.setToken(id, token);
       },
       login: function(name, password) {
-        var auth;
-        localStorage.setItem('username', name);
-        auth = 'Basic ' + window.btoa(name + ':' + password);
-        return this.getToken(auth);
-      },
-      getToken: function(auth) {
-        return $http.get(this.serverUrl + '/token', {
-          'headers': {
-            'Authorization': auth
-          }
-        });
+        var auth, token;
+        auth = window.btoa(name + ':' + password);
+        token = this.retreiveToken('user', auth);
+        this.setToken('user', token);
+        return token;
       },
       isLogged: function() {
-        var _ref;
-        return (_ref = this.getUserToken()) != null ? _ref : false;
+        return this.getUserToken() && this.isTokenValid('user');
       }
     };
   };

@@ -1,65 +1,79 @@
-module = angular.module 'rainbowServices', ['ng', 'rainbowResource', 'rainbowPatchApi', 'rainbow.config']
+module = angular.module 'rainbowServices', ['rainbowConfig']
 
 factoryFunction = ($http, $q, $timeout, WEB_URL, API_SUFFIX) ->
   serverUrl: WEB_URL + API_SUFFIX
+
+  getToken: (id) ->
+    return localStorage.getItem(id + '-token')
+
+  getTokenValidity: (id) ->
+    return localStorage.getItem(id + '-valid')
+
+  isTokenValid: (id) ->
+    return @getTokenValidity(id) > Date.now() / 1000
+
   getUserToken: () ->
-    return localStorage.getItem 'user'
+    return @getToken 'user'
 
   getTenantToken: (tenant) ->
-    token = localStorage.getItem 'tenant-' + tenant
+    id = 'tenant-' + tenant
+    token = @getToken id
+    if !token? or !@isTokenValid(id)
+      response = @retreiveToken 'tenant', @getUserToken(), tenant
+      @setToken id, response
+    @getToken id
 
-    if !token or token.valid < Date.now()
-      promise = $http.get @serverUrl + '/tenant/' + tenant + '/token', 
-        {
-          'headers': {
-            'Authorization': 'Token ' + this.getUserToken()
-          }
-        }
-      me = this
-      $q.all([promise]).then (items) ->
-        console.log(items[0].data.token)
-        me.setTenantToken tenant, JSON.stringify(items[0].data)
-      return JSON.parse(localStorage.getItem("tenant-" + tenant))['token']
+  retreiveToken: (type, auth, tenant) ->
+    if type == 'tenant'
+      authHeader= 'Token ' + auth
+      authUrl = @serverUrl + '/tenant/' + tenant + '/token'
+    else if type =='user-token'
+      authHeader = 'Token ' + auth
+      authUrl = @serverUrl + '/token'
+    else
+      authHeader = 'Basic ' + auth
+      authUrl = @serverUrl + '/token'
 
-    return JSON.parse(token)['token']
+    responseText = $.ajax({
+      type: "GET",
+      url: authUrl,
+      async: false,
+      headers: {'Authentication': authHeader},
+      dataType: 'json'
+    }).responseText
 
-  setUserToken: (token) ->
-    localStorage.setItem 'user', token.token
-    console.log token
-    timeout = token.valid * 1000 - new Date().getTime() - 30 * 1000
-    console.log 'Refresh timeout ', timeout
-    #todo fix
-    #$timeout @refreshUserToken, timeout
+    JSON.parse(responseText)
 
-  refreshUserToken: () ->
-    auth = 'Token ' + @getUserToken()
-    return @getToken auth
+  setToken: (id, data) ->
+    localStorage.setItem id + '-token', data.token
+    localStorage.setItem id + '-valid', data.valid
+    @setRefreshTokenTimer id
 
-  setUserTokenRefreshTimeout: () ->
+  setRefreshTokenTimer: (id) ->
+    if !@getToken(id) or !@isTokenValid(id)
+      return false
 
-  setTenantToken: (tenant, token) ->
-    localStorage.setItem "tenant-" + tenant, token
+    timeout = (@getTokenValidity(id) * 1000 - Date.now()) * 0.9
+    doRefresh = (me) ->
+      return () ->
+        me.refreshToken id
 
-  clearAllTokens: () ->
-    # todo: better way
-    localStorage.clear()
+    $timeout doRefresh(this), timeout
 
-  getUsername: () ->
-    return localStorage.getItem 'username'
+  refreshToken: (id) ->
+    if id == 'user'
+      token = @retreiveToken 'user-token', @getUserToken()
+    else
+      token = @retreiveToken 'tenant', @getUserToken(), id.replace('tenant-', '')
+    @setToken id, token
 
   login: (name, password) ->
-    localStorage.setItem 'username', name
-    auth = 'Basic ' + window.btoa(name + ':' + password)
-    return @getToken auth
-
-  getToken: (auth) ->
-    return $http.get @serverUrl + '/token', {
-        'headers': {
-            'Authorization': auth
-        }
-    }
+    auth = window.btoa(name + ':' + password)
+    token = @retreiveToken 'user', auth
+    @setToken 'user', token
+    token
 
   isLogged: () ->
-    return @getUserToken() ? false
+    return @getUserToken() and @isTokenValid('user')
 
 module.factory 'auth', factoryFunction
