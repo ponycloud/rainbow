@@ -2,7 +2,7 @@ module = angular.module 'rainbowServices'
 
 factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   data: {}
-
+  abSession: $q.defer()
   registerEntity: (type, entity) ->
     @data[type] = {
       'collection': entity,
@@ -13,19 +13,18 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
       @data[type]['items'][item.desired.uuid] = item
 
   setEntity: (type, uuid, entity) ->
-    me = this
-    $rootScope.$apply () ->
+    $rootScope.$apply () =>
       if !entity.desired and !entity.current
-        me.data[type]['collection'].splice(
-          me.data[type]['collection'].indexOf(me.data[type]['items'][uuid]),
+        @data[type]['collection'].splice(
+          @data[type]['collection'].indexOf(@data[type]['items'][uuid]),
           1)
-        delete me.data[type]['items'][uuid]
-      else if me.getEntity(type, uuid)
-        angular.copy entity, me.data[type]['items'][uuid]
+        delete @data[type]['items'][uuid]
+      else if @getEntity(type, uuid)
+        angular.copy entity, @data[type]['items'][uuid]
       else
-        if me.data[type]
-          me.data[type]['collection'].push entity
-          me.data[type]['items'][uuid] = entity
+        if @data[type]
+          @data[type]['collection'].push entity
+          @data[type]['items'][uuid] = entity
 
   getEntity: (type, uuid) ->
     if @data[type]
@@ -34,14 +33,16 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   listenSocket: () ->
     ab.connect WS_URL, @_socketConnected, ab.log, {'caller': this}
 
+  subscribeTenant: (tenant) ->
+    @abSession.promise.then () =>
+      @session.auth(auth.getTenantToken(tenant)).then (permissions) =>
+        @session.subscribe permissions['pubsub'][1].uri, ((topic, event) =>
+          @_onNewMessage topic, event), ab.log
+
   _socketConnected: (session) ->
-    me = this
     console.log 'connected ws'
-    session.auth(auth.getUserToken()).then (permissions) ->
-      notifyUri = permissions['pubsub'][0].uri
-      container = me.options.caller
-      session.subscribe notifyUrl, ((topic, event) ->
-        container._onNewMessage topic, event), ab.log
+    @options.caller.session = session
+    @options.caller.abSession.resolve()
 
   _onNewMessage: (topic, event) ->
     @setEntity event.type, event.pkey, {current: event.current, desired: event.desired}

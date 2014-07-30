@@ -7,6 +7,7 @@
   factoryFunction = function(auth, $q, $rootScope, WS_URL) {
     return {
       data: {},
+      abSession: $q.defer(),
       registerEntity: function(type, entity) {
         var item, _i, _len, _results;
         this.data[type] = {
@@ -21,18 +22,19 @@
         return _results;
       },
       setEntity: function(type, uuid, entity) {
-        var me;
+        var me,
+          _this = this;
         me = this;
         return $rootScope.$apply(function() {
           if (!entity.desired && !entity.current) {
-            me.data[type]['collection'].splice(me.data[type]['collection'].indexOf(me.data[type]['items'][uuid]), 1);
-            return delete me.data[type]['items'][uuid];
-          } else if (me.getEntity(type, uuid)) {
-            return angular.copy(entity, me.data[type]['items'][uuid]);
+            _this.data[type]['collection'].splice(_this.data[type]['collection'].indexOf(_this.data[type]['items'][uuid]), 1);
+            return delete _this.data[type]['items'][uuid];
+          } else if (_this.getEntity(type, uuid)) {
+            return angular.copy(entity, _this.data[type]['items'][uuid]);
           } else {
-            if (me.data[type]) {
-              me.data[type]['collection'].push(entity);
-              return me.data[type]['items'][uuid] = entity;
+            if (_this.data[type]) {
+              _this.data[type]['collection'].push(entity);
+              return _this.data[type]['items'][uuid] = entity;
             }
           }
         });
@@ -47,18 +49,20 @@
           'caller': this
         });
       },
-      _socketConnected: function(session) {
-        var me;
-        me = this;
-        console.log('connected ws');
-        return session.auth(auth.getUserToken()).then(function(permissions) {
-          var container, notifyUri;
-          notifyUri = permissions['pubsub'][0].uri;
-          container = me.options.caller;
-          return session.subscribe(notifyUrl, (function(topic, event) {
-            return container._onNewMessage(topic, event);
-          }), ab.log);
+      subscribeTenant: function(tenant) {
+        var _this = this;
+        return this.abSession.promise.then(function() {
+          return _this.session.auth(auth.getTenantToken(tenant)).then(function(permissions) {
+            return _this.session.subscribe(permissions['pubsub'][1].uri, (function(topic, event) {
+              return _this._onNewMessage(topic, event);
+            }), ab.log);
+          });
         });
+      },
+      _socketConnected: function(session) {
+        console.log('connected ws');
+        this.options.caller.session = session;
+        return this.options.caller.abSession.resolve();
       },
       _onNewMessage: function(topic, event) {
         return this.setEntity(event.type, event.pkey, {
