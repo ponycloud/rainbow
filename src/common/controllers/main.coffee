@@ -7,17 +7,21 @@ module.controller 'MainCtrl',
     constructor: (@$scope, @$rootScope, @$routeParams, @$location, dataContainer, $route, auth, Tenant) ->
       $scope.currentTenant =  $routeParams
       $scope.socketsActive = false
-
       if !auth.isLogged()
         $location.path "/login"
 
+      auth.setRefreshTokenTimer('user')
+
       $scope.$on '$routeChangeSuccess', () ->
         $scope.activePath = $location.path().split('/').pop()
-        $scope.tenant = $routeParams.tenant
 
         if (auth.isLogged() && !$scope.socketsActive)
           dataContainer.listenSocket()
 
+        if $scope.tenant != $routeParams.tenant and $routeParams.tenant
+          dataContainer.subscribeTenant $routeParams.tenant
+
+        $scope.tenant = $routeParams.tenant
         $rootScope.layoutPartial = () ->
           if $route.current['layoutPartial']
             return '../common/layouts/' + $route.current['layoutPartial']

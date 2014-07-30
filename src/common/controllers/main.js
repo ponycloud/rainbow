@@ -17,12 +17,16 @@
       if (!auth.isLogged()) {
         $location.path("/login");
       }
+      auth.setRefreshTokenTimer('user');
       $scope.$on('$routeChangeSuccess', function() {
         $scope.activePath = $location.path().split('/').pop();
-        $scope.tenant = $routeParams.tenant;
         if (auth.isLogged() && !$scope.socketsActive) {
           dataContainer.listenSocket();
         }
+        if ($scope.tenant !== $routeParams.tenant && $routeParams.tenant) {
+          dataContainer.subscribeTenant($routeParams.tenant);
+        }
+        $scope.tenant = $routeParams.tenant;
         return $rootScope.layoutPartial = function() {
           var currentTenant;
           if ($route.current['layoutPartial']) {
