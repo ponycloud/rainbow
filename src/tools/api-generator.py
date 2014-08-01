@@ -186,9 +186,7 @@ def make_services():
         url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in path])
         url = '#{WEB_URL}#{API_SUFFIX}' + url
         r += "s.factory \"%s\", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->\n" % name
-        r += '\tport_replace = {}\n'
-        r += '\tport_replace[WEB_PORT] = ":" + WEB_PORT\n'
-        r += "\t$resource(\"%s\", port_replace, methods, options)\n" % url
+        r += "\t$resource(\"%s\", {}, methods, options)\n" % url
 
     return r
 
