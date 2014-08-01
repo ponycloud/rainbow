@@ -2,7 +2,7 @@
 (function() {
   var ImageDetailCtrl, ImageListCtrl, module;
 
-  module = angular.module('tenant-image', ['rainbowServices']);
+  module = angular.module('tenantImage', ['rainbowServices']);
 
   module.config([
     '$routeProvider', function($routeProvider) {
@@ -18,9 +18,10 @@
   ]);
 
   module.controller('ImageListCtrl', ImageListCtrl = (function() {
-    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer'];
+    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal', '$location'];
 
-    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer) {
+    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal, $location) {
+      this.$location = $location;
       TenantImage.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(ImageList) {
@@ -31,18 +32,30 @@
         $scope.storagepools = StoragePoolList;
         return dataContainer.registerEntity('storagepools', $scope.storagepools);
       });
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
+      $scope.filterStatus = function(actual, expected) {
+        expected = expected.toLowerCase();
+        if ((actual != null) && 'initializing'.search(expected) > -1) {
+          return true;
+        }
+        if ((actual == null) && 'ready'.search(expected) > -1) {
+          return true;
+        }
+        return false;
       };
+      $scope.$location = $location;
+      $scope.imageModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/image-modal.tpl.html',
+        show: false
+      });
       $scope.open = function() {
         $scope.image = {
           'storagepools': {}
         };
-        return $scope.imageModal = true;
+        return $scope.imageModal.show();
       };
       $scope.close = function() {
-        $scope.imageModal = false;
+        $scope.imageModal.hide();
         return false;
       };
       $scope.createImage = function() {
@@ -88,17 +101,27 @@
           return _results;
         });
       };
-      $scope.deleteImage = function(image, index) {
-        var params, position;
-        position = $scope.images.indexOf(image);
+      $scope.deleteImage = function(uuid) {
+        var params;
         params = {
           'tenant': $routeParams.tenant,
-          'image': image.desired.uuid
+          'image': uuid
         };
         return TenantImage["delete"](params, function() {
-          $scope.images.splice(position, 1);
+          $scope.images = $scope.images.filter(function(item) {
+            return item.desired.uuid !== uuid;
+          });
           return $scope.message("Image deleted", 'success');
         });
+      };
+      $scope.deleteSelected = function(items) {
+        var item, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
+          _results.push($scope.deleteImage(item));
+        }
+        return _results;
       };
     }
 
@@ -107,9 +130,9 @@
   })());
 
   module.controller('ImageDetailCtrl', ImageDetailCtrl = (function() {
-    ImageDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer'];
+    ImageDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'TenantImageVolume', 'TenantVolume', 'StoragePool', 'dataContainer', '$modal'];
 
-    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer) {
+    function ImageDetailCtrl($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal, $route) {
       var criteria, remove_volume;
       criteria = {
         'tenant': $routeParams.tenant,
@@ -120,10 +143,16 @@
         'tenant': $routeParams.tenant
       });
       $scope.storagepools = {};
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      };
+      $scope.imageEditModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/image-edit-modal.tpl.html',
+        show: false
+      });
+      $scope.volumeListModal = $modal({
+        scope: $scope,
+        template: 'tenant/image/volume-list-modal.tpl.html',
+        show: false
+      });
       StoragePool.list().$promise.then(function(StoragePoolList) {
         var storagepool, storagepools, _i, _len;
         storagepools = StoragePoolList;
@@ -134,8 +163,8 @@
         }
         return TenantImageVolume.list(criteria).$promise.then(function(TenantImageList) {
           var volume, _j, _len1, _ref, _results;
-          $scope.back_volumes = TenantImageList;
-          _ref = $scope.back_volumes;
+          $scope.backVolumes = TenantImageList;
+          _ref = $scope.backVolumes;
           _results = [];
           for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
             volume = _ref[_j];
@@ -147,7 +176,8 @@
               }
               $scope.storagepools[volume.desired.storage_pool].volumes.push(volume);
               $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size;
-              _results.push($scope.image.size = volume.desired.size);
+              $scope.imageSize = volume.desired.size;
+              _results.push($scope.image.size = $scope.imageSize);
             } else {
               _results.push($scope.storagepools[volume.desired.storage_pool].used = false);
             }
@@ -157,21 +187,27 @@
       });
       $scope.open = function() {
         $scope.volumes = $scope.volumes.filter(function(item) {
-          if (!item.desired.image || item.desired.image === $routeParams.image) {
+          if (!(item.desired.image || item.desired.image === $routeParams.image)) {
             return item;
           }
         });
-        return $scope.imageModal = true;
+        return $scope.imageEditModal.show();
       };
-      $scope.close = function() {
-        $scope.imageModal = false;
+      $scope.close = function(reload) {
+        if (reload == null) {
+          reload = true;
+        }
+        $scope.imageEditModal.hide();
+        if (reload) {
+          $route.reload();
+        }
         return false;
       };
-      $scope.volume_list_open = function() {
-        return $scope.volumeListModal = true;
+      $scope.volumeListOpen = function() {
+        return $scope.volumeListModal.show();
       };
-      $scope.volume_list_close = function() {
-        $scope.volumeListModal = false;
+      $scope.volumeListClose = function() {
+        $scope.volumeListModal.hide();
         return false;
       };
       $scope.allocate = function(storagepool, size) {
@@ -200,17 +236,9 @@
           pool.volumes.push({
             desired: desired
           });
-          return $scope.back_volumes.push({
+          return $scope.backVolumes.push({
             desired: desired
           });
-        });
-      };
-      remove_volume = function(volume) {
-        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size;
-        $scope.storagepools[volume.desired.storage_pool].used = false;
-        $scope.storagepools[volume.desired.storage_pool].volumes = [];
-        return $scope.back_volumes = $scope.back_volumes.filter(function(item) {
-          return item.desired.uuid !== volume.desired.uuid;
         });
       };
       $scope.deallocate = function(storagepool) {
@@ -267,7 +295,15 @@
           'image': $routeParams.image
         };
         return TenantImage.patch(params, patch, function() {
-          return $scope.close();
+          return $scope.close(false);
+        });
+      };
+      remove_volume = function(volume) {
+        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size;
+        $scope.storagepools[volume.desired.storage_pool].used = false;
+        $scope.storagepools[volume.desired.storage_pool].volumes = [];
+        return $scope.backVolumes = $scope.backVolumes.filter(function(item) {
+          return item.desired.uuid !== volume.desired.uuid;
         });
       };
     }

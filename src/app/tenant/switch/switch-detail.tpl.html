@@ -1,0 +1,77 @@
+<h1>Switch "{{switch.desired.name}}"</h1>
+<div pc-multiactions>
+  <div class="col-md-4 well">
+      <h2>Details:</h2>
+       <ul class="nav nav-pills">
+        <li>
+          <button class="btn btn-primary" ng-click="open()">
+              <i class="glyphicon glyphicon-pencil"></i>
+              Modify
+          </button>
+        </li>
+      </ul>
+
+     <table class="table table-striped">
+        <tr>
+          <th>Name</th>
+          <td>{{switch.desired.name}}</td>
+        </tr>
+        <tr>
+          <th>Type</th>
+          <td>{{switch.desired.type}}</td>
+        </tr>
+        <tr ng-show="switch.desired.tag">
+          <th>Tag</th>
+          <td>{{switch.desired.tag}}</td>
+        </tr>
+      </table>
+  </div>
+
+  <div class="col-md-offset-1 col-md-6 well">
+      <h2>Networks</h2>
+      <ul class="nav nav-pills">
+       <li>
+         <button class="btn btn-primary" ng-click="networkModalOpen()">
+             <i class="fa fa-signal"></i>
+             Add network
+         </button>
+        </li>
+
+        <li class="pull-right">
+            <input class="form-control" ng-model="search" placeholder="Filter">
+        </li>
+        <li class="pull-right">
+          <pc-multieditbutton ></pc-multieditbutton>
+        </li>
+      </ul>
+
+      <table class="table table-striped" pc-table="{{search}}">
+        <thead>
+        <tr>
+          <th pc-multiall />
+          <th pc-column="desired.range">IP Range</th>
+          <th pc-column="desired.vlan_tag">VLAN tag</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr ng-repeat="network in getFiltered(networks)">
+          <td pc-multicheck="{{ network.desired.uuid }}"/>
+          <td>
+            <a href="#/{{tenant}}/switch/{{switch.desired.uuid}}/network/{{network.desired.uuid}}">
+              {{network.desired.range}}
+            </a>
+          </td>
+          <td>{{network.desired.vlan_tag}}</td>
+        </tr>
+        <tr>
+          <td colspan="3" ng-show="editMode">
+            <button class="btn btn-danger" ng-click="deleteSelectedNetworks(getSelected())">
+              <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+  </div>
+</div>

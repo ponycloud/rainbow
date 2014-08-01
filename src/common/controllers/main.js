@@ -2,7 +2,7 @@
 (function() {
   var MainCtrl, module;
 
-  module = angular.module('common-controllers', ['rainbowServices']);
+  module = angular.module('commonControllers', ['rainbowServices']);
 
   module.controller('MainCtrl', MainCtrl = (function() {
     MainCtrl.inject = ['$scope', '$rootScope', '$routeParams', '$location', 'dataContainer', '$route', 'auth', 'Tenant'];
@@ -20,6 +20,7 @@
       auth.setRefreshTokenTimer('user');
       $scope.$on('$routeChangeSuccess', function() {
         $scope.activePath = $location.path().split('/').pop();
+        $scope.path = $location.path().split('/');
         if (auth.isLogged() && !$scope.socketsActive) {
           dataContainer.listenSocket();
         }

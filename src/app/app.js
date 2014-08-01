@@ -16,14 +16,13 @@
     }
   ]);
 
-  app_module = angular.module('app', ['ngRoute', 'ngResource', 'rainbowServices', 'rainbowDirectives', '$strap.directives', 'jm.i18next', 'ui.bootstrap', 'tenant-instance', 'tenant-affinity-group', 'platform-tenant', 'common-controllers', 'tenant-image', 'tenant-dashboard', 'host-network', 'app-login', 'host']);
+  app_module = angular.module('app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource', 'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable', 'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch', 'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage', 'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork']);
 
   app_module.config([
-    '$routeProvider', '$locationProvider', '$httpProvider', 'authInterceptorProvider', function($routeProvider, $locationProvider, $httpProvider, authInterceptor) {
-      $routeProvider.otherwise({
+    '$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider) {
+      return $routeProvider.otherwise({
         redirectTo: '/tenant'
       });
-      return $httpProvider.interceptors.push(authInterceptor.$get());
     }
   ]);
 

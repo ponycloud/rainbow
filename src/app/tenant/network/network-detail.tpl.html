@@ -1,0 +1,77 @@
+<h1>Network "{{network.desired.range}}"</h1>
+
+
+
+<div pc-multiactions>
+
+  <div class="col-md-4 well">
+      <h2>Details:</h2>
+
+
+     <table class="table table-striped">
+
+        <tr>
+          <th>Switch</th>
+          <td>
+            <a href="#/{{tenant}}/switch/{{network.desired.switch}}">
+              <i class="fa fa-sitemap"></i>
+                Back to switch
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <th>IP Range</th>
+          <td>{{network.desired.range}}</td>
+        </tr>
+        <tr ng-show="network.desired.vlan_tag">
+          <th>VLAN</th>
+          <td>
+            {{network.desired.vlan_tag}}
+          </td>
+        </tr>
+      </table>
+  </div>
+  <div class="col-md-offset-1 col-md-6 well">
+      <h2>Routes</h2>
+      <ul class="nav nav-pills">
+       <li>
+         <button class="btn btn-primary" ng-click="routeModalOpen()">
+             <i class="glyphicon glyphicon-random"></i>
+             Add route
+         </button>
+        </li>
+
+        <li class="pull-right">
+            <input class="form-control" ng-model="search" placeholder="Filter">
+        </li>
+        <li class="pull-right">
+          <pc-multieditbutton ></pc-multieditbutton>
+        </li>
+      </ul>
+
+      <table class="table table-striped" pc-table="{{search}}">
+        <thead>
+        <tr>
+          <th pc-multiall />
+          <th pc-column="desired.route">Destination</th>
+          <th pc-column="desired.via">Gateway</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr ng-repeat="route in getFiltered(routes)">
+          <td pc-multicheck="{{ route.desired.uuid }}"/>
+          <td>{{route.desired.route}}</td>
+          <td>{{route.desired.via}}</td>
+        </tr>
+        <tr>
+          <td colspan="3" ng-show="editMode">
+            <button class="btn btn-danger" ng-click="deleteSelectedRoutes(getSelected())">
+              <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+  </div>
+</div>

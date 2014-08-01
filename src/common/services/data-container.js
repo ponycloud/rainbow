@@ -22,9 +22,7 @@
         return _results;
       },
       setEntity: function(type, uuid, entity) {
-        var me,
-          _this = this;
-        me = this;
+        var _this = this;
         return $rootScope.$apply(function() {
           if (!entity.desired && !entity.current) {
             _this.data[type]['collection'].splice(_this.data[type]['collection'].indexOf(_this.data[type]['items'][uuid]), 1);
@@ -60,7 +58,6 @@
         });
       },
       _socketConnected: function(session) {
-        console.log('connected ws');
         this.options.caller.session = session;
         return this.options.caller.abSession.resolve();
       },

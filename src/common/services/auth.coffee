@@ -1,6 +1,6 @@
 module = angular.module 'rainbowServices', ['rainbowConfig']
 
-factoryFunction = ($http, $q, $timeout, WEB_URL, API_SUFFIX) ->
+factoryFunction = ($timeout, WEB_URL, API_SUFFIX) ->
   serverUrl: WEB_URL + API_SUFFIX
 
   getToken: (id) ->

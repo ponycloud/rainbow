@@ -40,7 +40,6 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
           @_onNewMessage topic, event), ab.log
 
   _socketConnected: (session) ->
-    console.log 'connected ws'
     @options.caller.session = session
     @options.caller.abSession.resolve()
 

@@ -1,0 +1,17 @@
+<div>
+  <div class="well">
+    <ul class="nav nav-pills nav-wizard" ng-if="!hideIndicators">
+      <li ng-class="{'default': !step.completed && !step.selected, 
+                     'active': step.selected && !step.completed, 
+                     'completed': step.completed && !step.selected, 
+                     'active-completed': step.selected && step.completed}" 
+                      ng-repeat="step in steps">
+
+          <div class="nav-wedge"></div>
+          <a ng-click="goTo(step)">{{step.title || step.wzTitle}}</a>
+          <div class="nav-arrow"></div>
+        </li>
+    </ul>
+  </div>
+    <div class="steps" ng-transclude></div>
+</div>

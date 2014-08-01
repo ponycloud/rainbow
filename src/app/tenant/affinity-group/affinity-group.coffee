@@ -1,4 +1,4 @@
-module = angular.module 'tenant-affinity-group', ['rainbowServices']
+module = angular.module 'tenantAffinityGroup', ['rainbowServices']
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/:tenant/affinity-group', {
@@ -15,11 +15,12 @@ module.controller 'AffinityGroupListCtrl',
   class AffinityGroupListCtrl
     @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'dataContainer']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal, @$location) ->
       TenantAffinityGroup.list({'tenant': $routeParams.tenant}).$promise.then((affinityGroupList) ->
         $scope.affinityGroups = affinityGroupList
         dataContainer.registerEntity('affinityGroup', $scope.affinityGroups)
       )
+      $scope.affinityGroupListModal = $modal({scope: $scope, template: 'tenant/affinity-group/affinity-group-list-modal.tpl.html', show: false})
 
       $scope.opts = {
         backdropFade: true,
@@ -27,15 +28,12 @@ module.controller 'AffinityGroupListCtrl',
       }
 
       $scope.open = (affinityGroup) ->
-        $scope.affinityGroupModal = true
-        if typeof(affinityGroup) != 'undefined'
-          $scope.affinityGroup = affinityGroup.desired
-        else
-          $scope.affinityGroup = null
+        $scope.affinityGroupListModal.show()
+        $scope.affinityGroup = {}
 
       $scope.close = () ->
         $scope.closeMsg = 'I was closed at: ' + new Date()
-        $scope.affinityGroupModal = false
+        $scope.affinityGroupListModal.hide()
         false
 
       $scope.createAffinityGroup = () ->
@@ -43,36 +41,39 @@ module.controller 'AffinityGroupListCtrl',
           newAffinityGroup.desired = {'name': $scope.affinityGroup.name, 'type': $scope.affinityGroup.type}
           newAffinityGroup.$save({'tenant': $routeParams.tenant}, (response) ->
             # Construct data to push to the list.
-            $scope.affinityGroups.push({'desired': {'uuid':response.uuids.POST, 'name': $scope.affinityGroup.name}})
-            #$scope.message("AffinityGroup created", 'success')
+            $scope.affinityGroup.uuid = response.uuids.POST
+            $scope.affinityGroups.push({'desired': $scope.affinityGroup})
+            $scope.affinityGroupListModal.hide()
           )
 
-      $scope.deleteAffinityGroup = (affinityGroup, index) ->
-        position = $scope.affinityGroups.indexOf(affinityGroup)
-        params = {'tenant': $routeParams.tenant, 'affinity_group': affinityGroup.desired.uuid}
+      $scope.deleteAffinityGroup = (uuid) ->
+        params = {'tenant': $routeParams.tenant, 'affinity_group': uuid}
         TenantAffinityGroup.delete(params, () ->
-          $scope.affinityGroups.splice(position,1)
-          $scope.message("Affinity group deleted", 'success')
+          $scope.affinityGroups = $scope.affinityGroups.filter(
+            (item) ->
+              item.desired.uuid != uuid
+          )
+          #$scope.message("Affinity group deleted", 'success')
         )
+
+      $scope.deleteSelected = (items) ->
+        for item in items
+          $scope.deleteAffinityGroup item
 
 
 module.controller 'AffinityGroupDetailCtrl',
   class AffinityGroupDetailCtrl
-    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer']
+    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer', '$modal']
 
-    constructor: ($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance) ->
+    constructor: ($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance, $modal) ->
       $scope.affinityGroup = TenantAffinityGroup.get({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
       $scope.instances = TenantAffinityGroupInstanceJoin.list({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
-      console.log($scope.instances)
       TenantInstance.list({'tenant': $routeParams.tenant}).$promise.then((allInstances) ->
         $scope.allInstances = allInstances
-        $scope.filteredInstances = $scope.filterUsedInstances(allInstances, $scope.instances)
-       )
-
-      $scope.opts = {
-        backdropFade: true,
-        dialogFade: true
-      }
+        $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
+      )
+      $scope.affinityGroupEditModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/affinity-group-edit-modal.tpl.html', show: false})
+      $scope.instanceListModal = $modal({keyboard: true, scope: $scope, template: 'tenant/affinity-group/instance-list-modal.tpl.html', show: false})
 
       # Filter those instances that are not linked
       $scope.filterUsedInstances = (all, linked) ->
@@ -111,7 +112,6 @@ module.controller 'AffinityGroupDetailCtrl',
           desired['uuid'] = response.uuids.POST
           instance['joined'] = {}
           instance['joined'][desired.uuid] = desired
-          console.log instance
           $scope.instances.push instance
           $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
         )
@@ -130,18 +130,19 @@ module.controller 'AffinityGroupDetailCtrl',
 
       # Open the modal of the aff. group details
       $scope.open = (affinityGroup) ->
-        $scope.affinityGroupModal = true
+        $scope.affinityGroupEditModal.show()
 
       $scope.close = () ->
-        $scope.affinityGroupModal = false
+        $scope.affinityGroupEditModal.hide()
+        $scope.affinityGroup = TenantAffinityGroup.get({'tenant': $routeParams.tenant, 'affinity_group': $routeParams.affinity_group})
         false
 
       # Open the modal with unlinked instances
       $scope.instanceListOpen = () ->
         $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances)
-        $scope.instanceListModal = true
+        $scope.instanceListModal.show()
 
       $scope.instanceListClose = () ->
-        $scope.instanceListModal = false
+        $scope.instanceListModal.hide()
         false
 

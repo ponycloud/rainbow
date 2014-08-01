@@ -1,78 +1,132 @@
 <style type="text/css">
-        body {
-            padding-top: 60px;
-            padding-bottom: 40px;
-        }
-        .sidebar-nav {
-            padding: 9px 0;
-        }
-    </style>
+   .sidebar-nav {
+        padding: 9px 0;
+    }
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+  min-height: 1000px;
+  padding-top: 70px;
+}
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+</style>
 <div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar">	</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand" href="#">{{currentTenantName}}</a>
+    <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">PonyCloud</a>
+        </div>
+        <p class="navbar-text navbar-right">Logged in as <a href="#" class="navbar-link">Rainbow dash</a></p>
 
-            <p class="navbar-text pull-right">
-                Logged in as <a href="#" class="navbar-link">Rainbow dash</a>
-            </p>
+        <div class="navbar-collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a id="drop2" role="button" class="dropdown-toggle" href="href" data-toggle=
+              "dropdown" name="drop2">Platform</a>
 
-            <div class="nav-collapse collapse pull-right">
-                    <ul class="nav">
-                        <li class="dropdown"><a id="drop2" role="button" class="dropdown-toggle" href data-toggle="dropdown">Platform <b class="caret"></b></a>
-							 <ul class="dropdown-menu">
-								<li><a href="#/tenant">Tenants</a></li>
-								<li><a href="#/host/">Hosts</a></li>
-							</ul>
-						</li>
+              <ul class="dropdown-menu">
+                <li><a href="#/tenant">Tenants</a></li>
 
-                    </ul>
-            </div><!--/.nav-collapse -->
+                <li><a href="#/host/">Hosts</a></li>
+              </ul>
+            </li>
+          </ul>
         </div>
     </div>
 </div>
-
 <div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span2">
-            <div class="sidebar-nav">
-                <ul class="nav nav-list">
-                    <li ng-class="{ active: activePath=='tenant-dasboard' }"><a href="#/{{tenant}}/dashboard"><i class="icon-dashboard"></i>Tenant dashboard</a></li>
-                    <li class="nav-header">Virtual machines</li>
-                    <li ng-class="{ active: activePath=='instance' }"><a href="#/{{tenant}}/instance"><i class="icon-cloud"></i>Instances</a></li>
-                    <li ng-class="{ active: activePath=='affinity-group' }"><a href="#/{{tenant}}/affinity-group"><i class="icon-link"></i>Affinity groups</a></li>
-                    <li ng-class="{ active: activePath=='image' }"><a href="#/{{tenant}}/image"><i class="icon-hdd"></i>Images</a></li>
-                    <li class="nav-header">Networking</li>
-                    <li ng-class="getClass('switches')"><i class="icon-sitemap"></i>Switches</li>
-                    <li ng-class="getClass('networks')"><i class="icon-signal"></i>Networks</li>
-                    <li class="nav-header">Tenant</li>
-                    <li ng-class="getClass('metering')"></i>Metering</li>
-                </ul>
-            </div><!--/.well -->
-        </div><!--/span-->
+  <div class="row">
+    <div class="col-md-2">
+        <ul class="navbar navbar-collapse collapse nav nav-pills nav-stacked" id="main-collapse" role="menu">
+          <li ng-class="{ active: activePath=='tenant-dasboard' }">
+            <a href="#/{{tenant}}/dashboard">
+              <span class="glyphicon glyphicon-dashboard"></span>
+              Tenant dashboard
+            </a>
+          </li>
 
-		<div class="span10">
-			<div id="messages">
-				<div class="alert alert-{{message.type}}" ng-repeat="message in messages">
-					<button type="button" class="close" data-dismiss="alert">×</button>
-					{{message.text}}
-				</div>
-			</div>
+          <li class="nav-header">Virtual machines</li>
 
+          <li ng-class="{ active: path[2]=='instance' }">
+            <a href="#/{{tenant}}/instance">
+                <span class="glyphicon glyphicon-cloud"></span>
+                Instances
+            </a>
+          </li>
+          <li ng-class="{ active: path[2]=='affinity-group' }">
+            <a href="#/{{tenant}}/affinity-group">
+              <span class="glyphicon glyphicon-link"></span>
+              Affinity groups
+            </a>
+          </li>
+          <li ng-class="{ active: path[2] == 'image' }">
+            <a href="#/{{tenant}}/image">
+                <span class="glyphicon glyphicon-hdd"></span>
+                Images
+            </a>
+          </li>
 
-			<div ng-view></div>
+          <li class="nav-header">Networking</li>
 
-        </div><!--/span-->
-    </div><!--/row-->
+          <li ng-class="{ active: path[2] == 'switch' }">
+          <a href="#/{{tenant}}/switch">
+              <span class="fa fa-sitemap"></span>
+              Switches
+            </a>
+          </li>
 
-    <hr>
+          </li>
 
-    <footer>
-        <p>&copy; The PonyCloud Team 2014</p>
-    </footer>
+          <li class="nav-header">
+                  Tenant
+          </li>
 
-</div><!--/.fluid-container-->
+          <li ng-class="getClass('metering')">
+              <a>
+                <span class="fa fa-tachometer"></span>
+                Metering
+              </a>
+          </li>
+        </ul>
+
+   </div>
+
+    <div class="col-md-10">
+        <div id="messages">
+          <div class="alert alert-{{message.type}}" ng-repeat="message in messages">
+            <button type="button" class="close" data-dismiss=
+            "alert">&times;</button>{{message.text}}
+          </div>
+        </div>
+
+        <div ng-view="ng-view"></div>
+        </div>
+        <hr />
+    </div>
+</div>
+
+<div id="footer">
+      <div class="container">
+          <p class="text-muted">The PonyCloud Team</p>
+     </div>
+</div>

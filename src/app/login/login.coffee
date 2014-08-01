@@ -1,4 +1,4 @@
-module = angular.module 'app-login', []
+module = angular.module 'appLogin', []
 
 module.config ['$routeProvider', ($routeProvider) ->
   $routeProvider.when '/login',  {

@@ -50,15 +50,9 @@ module.directive 'networkInterfaces', () ->
         $scope.availableRoles[role].enabled = false
 
     $scope.removeNicRole = (bond, index) ->
-      role = bond.desired.roles[index].desired
-      $scope.roleDefaults[role.role] =
-        vlan_id: role.vlan_id
-        address: role.address
+      if bond.desired.roles[index] is undefined
+          return
 
-      $scope.availableRoles[role.role].enabled = true
-      bond.desired.roles.splice index, 1
-
-    $scope.removeNicRole = (bond, index) ->
       role = bond.desired.roles[index].desired
       $scope.roleDefaults[role.role] =
         vlan_id: role.vlan_id
@@ -88,6 +82,10 @@ module.directive 'networkInterfaces', () ->
 
       for i in [(bond.desired.roles.length - 1)..0]
         $scope.removeNicRole bond, i
+
+      for i in [(bond.desired.nics.length - 1)..0]
+        $scope.removeNic bond, i
+
 
       $scope.ngModel.bonds.splice index, 1
 

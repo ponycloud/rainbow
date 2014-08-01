@@ -95,15 +95,16 @@ factoryFunction = (Api, Host, HostNic, HostBond, HostBondRole, $http, $q) ->
         for role in bond.roles
           newRoles[role.desired.role] = role.desired
           if !role.desired.uuid
-            host.Bond(uuid).addRole role.desired
+            host.Bond(uuid).addRole {"desired": role.desired}
 
         for role in oldBonds[uuid].roles
           if !newRoles[role.desired.role]
             host.Bond(uuid).removeRole role.desired.uuid
           else
             diff = getDiff role.desired, newRoles[role.desired.role]
+            console.log diff
             if diff
-              host.Bond(uuid).mergeRole uuid, diff
+              host.Bond(uuid).mergeRole role.desired.uuid, diff
 
         for nic in bond.nics
           newNics[nic.desired.hwaddr] = nic.desired

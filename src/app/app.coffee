@@ -10,15 +10,14 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
    }
 ]
 
-app_module = angular.module 'app', ['ngRoute', 'ngResource',
-    'rainbowServices', 'rainbowDirectives', 
-    '$strap.directives', 'jm.i18next', 'ui.bootstrap', 'tenant-instance', 
-    'tenant-affinity-group', 'platform-tenant', 'common-controllers', 'tenant-image', 
-    'tenant-dashboard', 'host-network', 'app-login', 'host']
+app_module = angular.module 'app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource',
+    'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable',
+    'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch',
+    'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage',
+    'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork']
 
-app_module.config ['$routeProvider', '$locationProvider', '$httpProvider', 'authInterceptorProvider', ($routeProvider, $locationProvider, $httpProvider, authInterceptor) ->
+app_module.config ['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) ->
   $routeProvider.otherwise {redirectTo: '/tenant'}
-  $httpProvider.interceptors.push authInterceptor.$get()
 ]
 
 app_module.run ['$rootScope', '$route', ($rootScope, $route) ->

@@ -10,32 +10,32 @@ body {
 @font-face
 {
     font-family: tmo;
-    src: url('../font/TextMeOne-Regular.ttf'),
-    url('../font/TextMeOne-Regular.eot'); /* IE9+ */
+    src: url('../fonts/TextMeOne-Regular.ttf'),
+    url('../fonts/TextMeOne-Regular.eot'); /* IE9+ */
 }
 @font-face
 {
     font-family: po;
-    src: url('../font/PoiretOne-Regular.ttf'),
-    url('../font/PoiretOne-Regular.eot'); /* IE9+ */
+    src: url('../fonts/PoiretOne-Regular.ttf'),
+    url('../fonts/PoiretOne-Regular.eot'); /* IE9+ */
 }
 
 @font-face
 {
     font-family: fl;
-    src: url('../font/Flamenco-Light.ttf'),
-    url('../font/Flamenco-Light.eot'); /* IE9+ */
+    src: url('../fonts/Flamenco-Light.ttf'),
+    url('../fonts/Flamenco-Light.eot'); /* IE9+ */
 }@font-face
 {
     font-family: js;
-    src: url('../font/JuliusSansOne-Regular.ttf'),
-    url('../font/Flamenco-Light.eot'); /* IE9+ */
+    src: url('../fonts/JuliusSansOne-Regular.ttf'),
+    url('../fonts/Flamenco-Light.eot'); /* IE9+ */
 }
 @font-face
 {
     font-family: ns;
-    src: url('../font/Neo Sans.ttf'),
-    url('../font/Flamenco-Light.eot'); /* IE9+ */
+    src: url('../fonts/Neo Sans.ttf'),
+    url('../fonts/Flamenco-Light.eot'); /* IE9+ */
 }
 
 h1, h2, h3, h4 {
@@ -78,4 +78,97 @@ h2 {
 .animate {
 	//@include animation(0s, 2s, fadeout);
 	-moz-animation:fadeout normal 1.5s infinite;
+}
+
+th.with-caret {
+    cursor: pointer;
+    cursor: hand;
+}
+
+th.with-caret:hover {
+    background-color: #f5f5f5;
+}
+
+th.with-caret:hover .caret {
+    opacity: 1;
+}
+
+.caret-reversed {
+    border-top-width: 0;
+    border-bottom: 4px solid #000000;
+}
+
+.caret-inactive {
+    color: black;
+    opacity: 0.4;
+}
+
+.nav-nopills li a {
+  padding: 0;
+}
+
+a[ng-click] {
+  cursor: pointer;
+}
+
+.buffer {
+  margin: 10px;
+}
+
+/* Side notes for calling out things
+-------------------------------------------------- */
+ 
+/* Base styles (regardless of theme) */
+.bs-callout {
+  padding: 15px 30px 15px 15px;
+  border-left: 5px solid #eee;
+}
+.bs-callout h4 {
+  margin-top: 0;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+ 
+/* Themes for different contexts */
+.bs-callout-danger {
+  background-color: #fcf2f2;
+  border-color: #dFb5b4;
+}
+.bs-callout-warning {
+  background-color: #fefbed;
+  border-color: #f1e7bc;
+}
+.bs-callout-info {
+  background-color: #f0f7fd;
+  border-color: #d0e3f0;
+}
+
+
+.wizard .btn:after, .wizard .btn:before {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.wizard .btn:after {
+  border-color: rgba(136, 183, 213, 0);
+  border-left-color: #fff;
+  border-width: 17px;
+  margin-top: -17px;
+}
+.wizard .btn:before {
+  border-color: rgba(194, 225, 245, 0);
+  border-left-color: #ccc;
+  border-width: 18px;
+  margin-top: -18px;
 }
