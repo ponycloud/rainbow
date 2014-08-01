@@ -177,8 +177,10 @@ def make_patch_api():
 
 def make_services():
 
-    r = 's = angular.module "rainbowServices"\n'
-    r += 'methods = {"list":  {method:"GET", isArray:false}, "query": {method: "GET", isArray: false}}\n'
+    r = 'toArray = (data) ->\n'
+    r += '  _.toArray(JSON.parse(data))\n'
+    r += 's = angular.module "rainbowServices"\n'
+    r += 'methods = {"list":  {method:"GET", isArray:true, transformResponse: toArray}, "query": {method: "GET", isArray: true, transformResponse: toArray}}\n'
     r += 'options = {"stripTrailingSlashes": false}\n'
 
     for path in api_paths:

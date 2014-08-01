@@ -1,5 +1,7 @@
+toArray = (data) ->
+  _.toArray(JSON.parse(data))
 s = angular.module "rainbowServices"
-methods = {"list":  {method:"GET", isArray:false}, "query": {method: "GET", isArray: false}}
+methods = {"list":  {method:"GET", isArray:true, transformResponse: toArray}, "query": {method: "GET", isArray: true, transformResponse: toArray}}
 options = {"stripTrailingSlashes": false}
 s.factory "StoragePool", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/storage-pool/:storage_pool", {}, methods, options)
