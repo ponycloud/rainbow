@@ -4,9 +4,10 @@
 
   module = angular.module('rainbowServices', ['rainbowConfig']);
 
-  factoryFunction = function($timeout, WEB_URL, API_SUFFIX) {
+  factoryFunction = function($q, $timeout, WEB_URL, API_SUFFIX) {
     return {
       serverUrl: WEB_URL + API_SUFFIX,
+      userTokenPromise: $q.defer(),
       getToken: function(id) {
         return localStorage.getItem(id + '-token');
       },
@@ -17,20 +18,31 @@
         return this.getTokenValidity(id) > Date.now() / 1000;
       },
       getUserToken: function() {
-        return this.getToken('user');
+        return this.userTokenPromise.promise;
       },
       getTenantToken: function(tenant) {
-        var id, response, token;
+        var id, promise, token, userToken,
+          _this = this;
         id = 'tenant-' + tenant;
         token = this.getToken(id);
+        promise = $q.defer();
         if ((token == null) || !this.isTokenValid(id)) {
-          response = this.retreiveToken('tenant', this.getUserToken(), tenant);
-          this.setToken(id, response);
+          userToken = this.getUserToken();
+          userToken.then(function(userTokenValue) {
+            var response;
+            response = _this.retreiveToken('tenant', userTokenValue, tenant);
+            return response.then(function(data) {
+              _this.setToken(id, data.data);
+              return promise.resolve(data.data.token);
+            });
+          });
+        } else {
+          promise.resolve(token);
         }
-        return this.getToken(id);
+        return promise.promise;
       },
       retreiveToken: function(type, auth, tenant) {
-        var authHeader, authUrl, responseText;
+        var authHeader, authUrl, injector;
         if (type === 'tenant') {
           authHeader = 'Token ' + auth;
           authUrl = this.serverUrl + '/tenant/' + tenant + '/token';
@@ -41,20 +53,23 @@
           authHeader = 'Basic ' + auth;
           authUrl = this.serverUrl + '/token';
         }
-        responseText = $.ajax({
-          type: "GET",
-          url: authUrl,
-          async: false,
-          headers: {
-            'Authentication': authHeader
-          },
-          dataType: 'json'
-        }).responseText;
-        return JSON.parse(responseText);
+        injector = angular.injector(['ng']);
+        return injector.invoke(function($http) {
+          var requestConfig;
+          requestConfig = {
+            headers: {
+              'Authorization': authHeader
+            }
+          };
+          return $http.get(authUrl, requestConfig);
+        });
       },
       setToken: function(id, data) {
         localStorage.setItem(id + '-token', data.token);
         localStorage.setItem(id + '-valid', data.valid);
+        if (id === 'user') {
+          this.userTokenPromise.resolve(data.token);
+        }
         return this.setRefreshTokenTimer(id);
       },
       setRefreshTokenTimer: function(id) {
@@ -71,23 +86,34 @@
         return $timeout(doRefresh(this), timeout);
       },
       refreshToken: function(id) {
-        var token;
+        var token, userToken,
+          _this = this;
+        userToken = this.getToken('user');
         if (id === 'user') {
-          token = this.retreiveToken('user-token', this.getUserToken());
+          token = this.retreiveToken('user-token', userToken);
         } else {
-          token = this.retreiveToken('tenant', this.getUserToken(), id.replace('tenant-', ''));
+          token = this.retreiveToken('tenant', userToken, id.replace('tenant-', ''));
         }
-        return this.setToken(id, token);
+        return token.then(function(tokenData) {
+          return _this.setToken(id, tokenData.data);
+        });
       },
       login: function(name, password) {
-        var auth, token;
+        var auth, token,
+          _this = this;
         auth = window.btoa(name + ':' + password);
         token = this.retreiveToken('user', auth);
-        this.setToken('user', token);
-        return token;
+        return token.then(function(response) {
+          return _this.setToken('user', response.data);
+        });
       },
       isLogged: function() {
         return this.getUserToken() && this.isTokenValid('user');
+      },
+      initTokens: function() {
+        if (this.isLogged) {
+          return this.userTokenPromise.resolve(this.getToken('user'));
+        }
       }
     };
   };

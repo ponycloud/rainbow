@@ -1,11 +1,12 @@
 module = angular.module 'rainbowServices'
 
-factoryFunction = (auth) ->
+factoryFunction = (auth, $q) ->
   {
     'request': (config) ->
       tenantSearch = /\/tenant\/([0-9a-z-]*)\//
       tenantUrl = tenantSearch.exec config.url
 
+      configPromise = $q.defer()
       # ignore non-api calls and don't overwrite requests with auth header
       if config['headers']['Authorization']? or
          config.url.indexOf('/api/') == -1
@@ -16,11 +17,13 @@ factoryFunction = (auth) ->
       else
         token = auth.getUserToken()
 
-      if token?
-        config['headers'] = angular.extend(config['headers'] || {},
-        {'Authorization': 'Token '+ token})
+      token.then (tokenValue) ->
+        if tokenValue?
+          config['headers'] = angular.extend(config['headers'] || {},
+          {'Authorization': 'Token ' + tokenValue})
+        configPromise.resolve(config)
 
-      config
+      configPromise.promise
   }
 
 module.factory 'authInterceptor', factoryFunction

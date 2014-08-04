@@ -4,12 +4,13 @@
 
   module = angular.module('rainbowServices');
 
-  factoryFunction = function(auth) {
+  factoryFunction = function(auth, $q) {
     return {
       'request': function(config) {
-        var tenantSearch, tenantUrl, token;
+        var configPromise, tenantSearch, tenantUrl, token;
         tenantSearch = /\/tenant\/([0-9a-z-]*)\//;
         tenantUrl = tenantSearch.exec(config.url);
+        configPromise = $q.defer();
         if ((config['headers']['Authorization'] != null) || config.url.indexOf('/api/') === -1) {
           return config;
         }
@@ -18,12 +19,15 @@
         } else {
           token = auth.getUserToken();
         }
-        if (token != null) {
-          config['headers'] = angular.extend(config['headers'] || {}, {
-            'Authorization': 'Token ' + token
-          });
-        }
-        return config;
+        token.then(function(tokenValue) {
+          if (tokenValue != null) {
+            config['headers'] = angular.extend(config['headers'] || {}, {
+              'Authorization': 'Token ' + tokenValue
+            });
+          }
+          return configPromise.resolve(config);
+        });
+        return configPromise.promise;
       }
     };
   };

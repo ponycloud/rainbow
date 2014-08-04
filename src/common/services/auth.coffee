@@ -1,7 +1,8 @@
 module = angular.module 'rainbowServices', ['rainbowConfig']
 
-factoryFunction = ($timeout, WEB_URL, API_SUFFIX) ->
+factoryFunction = ($q, $timeout, WEB_URL, API_SUFFIX) ->
   serverUrl: WEB_URL + API_SUFFIX
+  userTokenPromise: $q.defer()
 
   getToken: (id) ->
     return localStorage.getItem(id + '-token')
@@ -13,15 +14,22 @@ factoryFunction = ($timeout, WEB_URL, API_SUFFIX) ->
     return @getTokenValidity(id) > Date.now() / 1000
 
   getUserToken: () ->
-    return @getToken 'user'
+    return @userTokenPromise.promise
 
   getTenantToken: (tenant) ->
     id = 'tenant-' + tenant
     token = @getToken id
+    promise = $q.defer()
     if !token? or !@isTokenValid(id)
-      response = @retreiveToken 'tenant', @getUserToken(), tenant
-      @setToken id, response
-    @getToken id
+      userToken = @getUserToken()
+      userToken.then (userTokenValue) =>
+        response = @retreiveToken 'tenant', userTokenValue, tenant
+        response.then (data) =>
+          @setToken id, data.data
+          promise.resolve data.data.token
+    else
+      promise.resolve token
+    promise.promise
 
   retreiveToken: (type, auth, tenant) ->
     if type == 'tenant'
@@ -34,19 +42,21 @@ factoryFunction = ($timeout, WEB_URL, API_SUFFIX) ->
       authHeader = 'Basic ' + auth
       authUrl = @serverUrl + '/token'
 
-    responseText = $.ajax({
-      type: "GET",
-      url: authUrl,
-      async: false,
-      headers: {'Authentication': authHeader},
-      dataType: 'json'
-    }).responseText
-
-    JSON.parse(responseText)
+    # avoiding circular dependency with $http
+    # route -> http -> auth-interceptor -> auth -> http
+    injector = angular.injector(['ng'])
+    return injector.invoke ($http) ->
+      requestConfig = {
+        headers: {'Authorization': authHeader}
+      }
+      $http.get authUrl, requestConfig
 
   setToken: (id, data) ->
     localStorage.setItem id + '-token', data.token
     localStorage.setItem id + '-valid', data.valid
+    if id == 'user'
+      @userTokenPromise.resolve data.token
+
     @setRefreshTokenTimer id
 
   setRefreshTokenTimer: (id) ->
@@ -61,19 +71,26 @@ factoryFunction = ($timeout, WEB_URL, API_SUFFIX) ->
     $timeout doRefresh(this), timeout
 
   refreshToken: (id) ->
+    userToken = @getToken 'user'
     if id == 'user'
-      token = @retreiveToken 'user-token', @getUserToken()
+      token = @retreiveToken 'user-token', userToken
     else
-      token = @retreiveToken 'tenant', @getUserToken(), id.replace('tenant-', '')
-    @setToken id, token
+      token = @retreiveToken 'tenant', userToken, id.replace('tenant-', '')
+
+    token.then (tokenData) =>
+      @setToken id, tokenData.data
 
   login: (name, password) ->
     auth = window.btoa(name + ':' + password)
     token = @retreiveToken 'user', auth
-    @setToken 'user', token
-    token
+    token.then (response) =>
+        @setToken 'user', response.data
 
   isLogged: () ->
     return @getUserToken() and @isTokenValid('user')
+
+  initTokens: () ->
+    if @isLogged
+      @userTokenPromise.resolve @getToken('user')
 
 module.factory 'auth', factoryFunction

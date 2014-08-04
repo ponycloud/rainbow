@@ -11,6 +11,7 @@ module.controller 'MainCtrl',
         $location.path "/login"
 
       auth.setRefreshTokenTimer('user')
+      auth.initTokens()
 
       $scope.$on '$routeChangeSuccess', () ->
         $scope.activePath = $location.path().split('/').pop()
