@@ -83,69 +83,75 @@ class Entity
       }
 """
 def get_pkey(key):
-	if not isinstance(key,list):
-		return key
+    if not isinstance(key,list):
+        return key
 
-	return '[%s]' % ', '.join(map(lambda x: "'%s'" % x, key))
+    return '[%s]' % ', '.join(map(lambda x: "'%s'" % x, key))
 
 def class_name(name):
-	return name.title().replace('-', '')
+    return name.title().replace('-', '')
 
 def safe_name(name):
-	return '_' + name.replace('-', '')
+    return '_' + name.replace('-', '')
 
 def get_paths(api, path):
-	results = []
-	for key, val in api.iteritems():
-		results.append(path + [key])
-		if val['children']:
-			results += get_paths(val['children'], path + [key] )
-	return results
+    results = []
+    for key, val in api.iteritems():
+        results.append(path + [key])
+        if val['join']:
+            for join in val['join']:
+                if key == join.replace('_', '-'):
+                    results.append(path + [key, 'join'])
+                else:
+                    results.append(path + [key, join, 'join'])
+        if val['children']:
+            results += get_paths(val['children'], path + [key] )
+    return results
 
 def get_entities(api, entities):
-	for key, val in api.iteritems():
-		if not key in entities:
-			entities[key] = val
-		else:
-			if len(val['children']) > entities[key]['children']:
-				entities[key] = val
-		if val['children']:
-			entities = get_entities(val['children'], entities)
-	return entities
+    for key, val in api.iteritems():
+        if not key in entities:
+            entities[key] = val
+        else:
+            if len(val['children']) > entities[key]['children']:
+                entities[key] = val
+        if val['children']:
+            entities = get_entities(val['children'], entities)
+    return entities
 
 api_paths = get_paths(api, [])
 entities = get_entities(api, {})
 
 def generate_methods(objName, safeName, pkey, name):
-	r  = '  add%s: (data, id) ->\n' % objName
-	r += '    %s = new %s this, "/children/%s/%%id/"\n' % (safeName, objName, name)
-	r += '    @_add "add", "/children/%s/%%id",data,"%s",%s.id\n' % (name,pkey,safeName)
-	r += '    return %s\n' % safeName
-	r += '\n'
-	r += '  remove%s: (uuid) ->\n' % objName
-	r += '    @_remove "/children/%s/%%id", uuid\n' % name
-	r += '\n'
-	r += '  replace%s: (uuid, newData) ->\n' % objName
-	r += '    @_replace "/children/%s/%%id/desired", uuid, newData\n' % name
-	r += '\n'
-	r += '  merge%s: (uuid, newData) ->\n' % objName
-	r += '    @_merge "/children/%s/%%id/desired", uuid, newData\n' % name
-	r += '\n'
-	r += '  %s: (id) ->\n' % objName
-	r += '    return new %s this, "/children/%s/%%id/", id\n\n' % (objName, name)
-	return r
+    r  = '  add%s: (data, id) ->\n' % objName
+    r += '    %s = new %s this, "/children/%s/%%id/"\n' % (safeName, objName, name)
+    r += '    @_add "add", "/children/%s/%%id",data,"%s",%s.id\n' % (name,pkey,safeName)
+    r += '    return %s\n' % safeName
+    r += '\n'
+    r += '  remove%s: (uuid) ->\n' % objName
+    r += '    @_remove "/children/%s/%%id", uuid\n' % name
+    r += '\n'
+    r += '  replace%s: (uuid, newData) ->\n' % objName
+    r += '    @_replace "/children/%s/%%id/desired", uuid, newData\n' % name
+    r += '\n'
+    r += '  merge%s: (uuid, newData) ->\n' % objName
+    r += '    @_merge "/children/%s/%%id/desired", uuid, newData\n' % name
+    r += '\n'
+    r += '  %s: (id) ->\n' % objName
+    r += '    return new %s this, "/children/%s/%%id/", id\n\n' % (objName, name)
+    return r
 
 def generate_class(objClass, children):
-		objName = class_name(objClass)
-		r =  '\nclass %s extends Entity\n' % objClass
+        objName = class_name(objClass)
+        r =  '\nclass %s extends Entity\n' % objClass
 
-		for name, api_object in children.iteritems():
-			objName = class_name(name)
-			safeName = safe_name(name)
-			pkey = api_object['pkey']
-			r += generate_methods(objName, safeName, pkey, name)
+        for name, api_object in children.iteritems():
+            objName = class_name(name)
+            safeName = safe_name(name)
+            pkey = api_object['pkey']
+            r += generate_methods(objName, safeName, pkey, name)
 
-		return r
+        return r
 
 
 def make_patch_api():
@@ -185,8 +191,14 @@ def make_services():
 
     for path in api_paths:
         name = ''.join([class_name(x) for x in path])
-        url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in path])
+        if path[-1] == 'join':
+            parts = path[:-1]
+            parts.append('_join')
+        else:
+            parts = path
+        url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in parts])
         url = '#{WEB_URL}#{API_SUFFIX}' + url
+        url = url.replace(':_join', '')
         r += "s.factory \"%s\", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->\n" % name
         r += "\t$resource(\"%s\", {}, methods, options)\n" % url
 
@@ -202,3 +214,4 @@ if __name__ == "__main__":
     elif sys.argv[1] == "services":
         print make_services()
 
+# vim:set sw=4 ts=4 et:
