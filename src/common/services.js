@@ -77,8 +77,24 @@
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/storage-pool/:storage_pool", {}, methods, options);
   });
 
+  s.factory("HostStoragePoolHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/storage-pool/:storage_pool/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostStoragePoolJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/storage-pool/:storage_pool/_join/", {}, methods, options);
+  });
+
   s.factory("HostInstance", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/instance/:instance", {}, methods, options);
+  });
+
+  s.factory("HostInstanceHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/instance/:instance/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostInstanceJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/instance/:instance/_join/", {}, methods, options);
   });
 
   s.factory("HostNic", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
@@ -89,16 +105,48 @@
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/image/:image", {}, methods, options);
   });
 
+  s.factory("HostImageHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/image/:image/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostImageJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/image/:image/_join/", {}, methods, options);
+  });
+
   s.factory("HostVolume", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/volume/:volume", {}, methods, options);
+  });
+
+  s.factory("HostVolumeHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/volume/:volume/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostVolumeJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/volume/:volume/_join/", {}, methods, options);
   });
 
   s.factory("HostCpuProfile", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/cpu-profile/:cpu_profile", {}, methods, options);
   });
 
+  s.factory("HostCpuProfileHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/cpu-profile/:cpu_profile/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostCpuProfileJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/cpu-profile/:cpu_profile/_join/", {}, methods, options);
+  });
+
   s.factory("HostDisk", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/disk/:disk", {}, methods, options);
+  });
+
+  s.factory("HostDiskHostJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/disk/:disk/host/:host/_join/", {}, methods, options);
+  });
+
+  s.factory("HostDiskJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/host/:host/disk/:disk/_join/", {}, methods, options);
   });
 
   s.factory("HostEvent", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
@@ -153,6 +201,10 @@
     return $resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/affinity-group/:affinity_group/instance/:instance", {}, methods, options);
   });
 
+  s.factory("TenantAffinityGroupInstanceJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/affinity-group/:affinity_group/instance/:instance/_join/", {}, methods, options);
+  });
+
   s.factory("TenantImage", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/image/:image", {}, methods, options);
   });
@@ -183,6 +235,10 @@
 
   s.factory("TenantInstanceAffinityGroup", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
     return $resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/affinity-group/:affinity_group", {}, methods, options);
+  });
+
+  s.factory("TenantInstanceAffinityGroupInstanceJoin", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {
+    return $resource("" + WEB_URL + API_SUFFIX + "/tenant/:tenant/instance/:instance/affinity-group/:affinity_group/instance/:instance/_join/", {}, methods, options);
   });
 
   s.factory("TenantInstanceVnic", function($resource, WEB_URL, WEB_PORT, API_SUFFIX) {

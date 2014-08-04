@@ -29,18 +29,42 @@ s.factory "Host", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host", {}, methods, options)
 s.factory "HostStoragePool", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/storage-pool/:storage_pool", {}, methods, options)
+s.factory "HostStoragePoolHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/storage-pool/:storage_pool/host/:host/_join/", {}, methods, options)
+s.factory "HostStoragePoolJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/storage-pool/:storage_pool/_join/", {}, methods, options)
 s.factory "HostInstance", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/instance/:instance", {}, methods, options)
+s.factory "HostInstanceHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/instance/:instance/host/:host/_join/", {}, methods, options)
+s.factory "HostInstanceJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/instance/:instance/_join/", {}, methods, options)
 s.factory "HostNic", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/nic/:nic", {}, methods, options)
 s.factory "HostImage", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/image/:image", {}, methods, options)
+s.factory "HostImageHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/image/:image/host/:host/_join/", {}, methods, options)
+s.factory "HostImageJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/image/:image/_join/", {}, methods, options)
 s.factory "HostVolume", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/volume/:volume", {}, methods, options)
+s.factory "HostVolumeHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/volume/:volume/host/:host/_join/", {}, methods, options)
+s.factory "HostVolumeJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/volume/:volume/_join/", {}, methods, options)
 s.factory "HostCpuProfile", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/cpu-profile/:cpu_profile", {}, methods, options)
+s.factory "HostCpuProfileHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/cpu-profile/:cpu_profile/host/:host/_join/", {}, methods, options)
+s.factory "HostCpuProfileJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/cpu-profile/:cpu_profile/_join/", {}, methods, options)
 s.factory "HostDisk", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/disk/:disk", {}, methods, options)
+s.factory "HostDiskHostJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/disk/:disk/host/:host/_join/", {}, methods, options)
+s.factory "HostDiskJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/disk/:disk/_join/", {}, methods, options)
 s.factory "HostEvent", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/host/:host/event/:event", {}, methods, options)
 s.factory "HostBond", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
@@ -67,6 +91,8 @@ s.factory "TenantAffinityGroup", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group", {}, methods, options)
 s.factory "TenantAffinityGroupInstance", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group/instance/:instance", {}, methods, options)
+s.factory "TenantAffinityGroupInstanceJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/affinity-group/:affinity_group/instance/:instance/_join/", {}, methods, options)
 s.factory "TenantImage", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/image/:image", {}, methods, options)
 s.factory "TenantImageVolume", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
@@ -83,6 +109,8 @@ s.factory "TenantInstanceVdisk", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vdisk/:vdisk", {}, methods, options)
 s.factory "TenantInstanceAffinityGroup", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/affinity-group/:affinity_group", {}, methods, options)
+s.factory "TenantInstanceAffinityGroupInstanceJoin", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
+	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/affinity-group/:affinity_group/instance/:instance/_join/", {}, methods, options)
 s.factory "TenantInstanceVnic", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
 	$resource("#{WEB_URL}#{API_SUFFIX}/tenant/:tenant/instance/:instance/vnic/:vnic", {}, methods, options)
 s.factory "TenantInstanceVnicAddress", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->
