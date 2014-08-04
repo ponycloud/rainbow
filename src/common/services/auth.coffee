@@ -87,10 +87,21 @@ factoryFunction = ($q, $timeout, WEB_URL, API_SUFFIX) ->
         @setToken 'user', response.data
 
   isLogged: () ->
-    return @getUserToken() and @isTokenValid('user')
+    return @getToken('user')? and @isTokenValid('user')
 
   initTokens: () ->
-    if @isLogged
+    if @isLogged()
       @userTokenPromise.resolve @getToken('user')
+      @setRefreshTokenTimer 'user'
+
+    for i in [0...localStorage.length] by 1
+      key = localStorage.key i
+
+      tenantSearch = /tenant-([0-9a-z-]*)-token/
+      tenantUuid = tenantSearch.exec key
+
+      if tenantUuid?
+        @setRefreshTokenTimer 'tenant-' + tenantUuid[1]
+
 
 module.factory 'auth', factoryFunction

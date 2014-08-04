@@ -17,7 +17,6 @@
       if (!auth.isLogged()) {
         $location.path("/login");
       }
-      auth.setRefreshTokenTimer('user');
       auth.initTokens();
       $scope.$on('$routeChangeSuccess', function() {
         $scope.activePath = $location.path().split('/').pop();

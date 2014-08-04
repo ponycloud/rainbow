@@ -77,6 +77,7 @@
         if (!this.getToken(id) || !this.isTokenValid(id)) {
           return false;
         }
+        console.log(id);
         timeout = (this.getTokenValidity(id) * 1000 - Date.now()) * 0.9;
         doRefresh = function(me) {
           return function() {
@@ -108,12 +109,26 @@
         });
       },
       isLogged: function() {
-        return this.getUserToken() && this.isTokenValid('user');
+        return (this.getToken('user') != null) && this.isTokenValid('user');
       },
       initTokens: function() {
-        if (this.isLogged) {
-          return this.userTokenPromise.resolve(this.getToken('user'));
+        var i, key, tenantSearch, tenantUuid, _i, _ref, _results;
+        if (this.isLogged()) {
+          this.userTokenPromise.resolve(this.getToken('user'));
+          this.setRefreshTokenTimer('user');
         }
+        _results = [];
+        for (i = _i = 0, _ref = localStorage.length; _i < _ref; i = _i += 1) {
+          key = localStorage.key(i);
+          tenantSearch = /tenant-([0-9a-z-]*)-token/;
+          tenantUuid = tenantSearch.exec(key);
+          if (tenantUuid != null) {
+            _results.push(this.setRefreshTokenTimer('tenant-' + tenantUuid[1]));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
       }
     };
   };

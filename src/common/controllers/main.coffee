@@ -10,7 +10,6 @@ module.controller 'MainCtrl',
       if !auth.isLogged()
         $location.path "/login"
 
-      auth.setRefreshTokenTimer('user')
       auth.initTokens()
 
       $scope.$on '$routeChangeSuccess', () ->
