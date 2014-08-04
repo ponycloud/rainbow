@@ -35,9 +35,10 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
 
   subscribeTenant: (tenant) ->
     @abSession.promise.then () =>
-      @session.auth(auth.getTenantToken(tenant)).then (permissions) =>
-        @session.subscribe permissions['pubsub'][1].uri, ((topic, event) =>
-          @_onNewMessage topic, event), ab.log
+      auth.getTenantToken(tenant).then (tenantToken) =>
+        @session.auth(tenantToken).then (permissions) =>
+          @session.subscribe permissions['pubsub'][1].uri, ((topic, event) =>
+            @_onNewMessage topic, event), ab.log
 
   _socketConnected: (session) ->
     @options.caller.session = session

@@ -50,10 +50,12 @@
       subscribeTenant: function(tenant) {
         var _this = this;
         return this.abSession.promise.then(function() {
-          return _this.session.auth(auth.getTenantToken(tenant)).then(function(permissions) {
-            return _this.session.subscribe(permissions['pubsub'][1].uri, (function(topic, event) {
-              return _this._onNewMessage(topic, event);
-            }), ab.log);
+          return auth.getTenantToken(tenant).then(function(tenantToken) {
+            return _this.session.auth(tenantToken).then(function(permissions) {
+              return _this.session.subscribe(permissions['pubsub'][1].uri, (function(topic, event) {
+                return _this._onNewMessage(topic, event);
+              }), ab.log);
+            });
           });
         });
       },
