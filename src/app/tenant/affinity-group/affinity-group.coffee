@@ -18,7 +18,7 @@ module.controller 'AffinityGroupListCtrl',
     constructor: ($scope, $rootScope, $routeParams, TenantAffinityGroup, dataContainer, $modal, @$location) ->
       TenantAffinityGroup.list({'tenant': $routeParams.tenant}).$promise.then((affinityGroupList) ->
         $scope.affinityGroups = affinityGroupList
-        dataContainer.registerEntity('affinityGroup', $scope.affinityGroups)
+        dataContainer.registerEntity('affinity_group', $scope.affinityGroups)
       )
       $scope.affinityGroupListModal = $modal({scope: $scope, template: 'tenant/affinity-group/affinity-group-list-modal.tpl.html', show: false})
 
