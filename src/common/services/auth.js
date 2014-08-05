@@ -68,6 +68,7 @@
         localStorage.setItem(id + '-token', data.token);
         localStorage.setItem(id + '-valid', data.valid);
         if (id === 'user') {
+          this.userTokenPromise = $q.defer();
           this.userTokenPromise.resolve(data.token);
         }
         return this.setRefreshTokenTimer(id);
@@ -77,7 +78,6 @@
         if (!this.getToken(id) || !this.isTokenValid(id)) {
           return false;
         }
-        console.log(id);
         timeout = (this.getTokenValidity(id) * 1000 - Date.now()) * 0.9;
         doRefresh = function(me) {
           return function() {
