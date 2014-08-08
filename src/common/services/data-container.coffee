@@ -3,32 +3,51 @@ module = angular.module 'rainbowServices'
 factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   data: {}
   abSession: $q.defer()
+
+  registerResource: (resource, pkey) ->
+    @data[pkey] = resource
+
   registerEntity: (type, entity) ->
-    @data[type] = {
-      'collection': entity,
-      'items': {}
-    }
+    if @data[type] is undefined
+      @data[type] = [{
+        'collection': entity,
+        'items': new ->
+          @[item.pkey] = item for item in $ entity
+          this
+      }]
+    else
+      @data[type].push({
+        'collection': entity,
+        'items': new ->
+          @[item.pkey] = item for item in $ entity
+          this
+      })
 
-    for item in entity
-      @data[type]['items'][item.desired.uuid] = item
-
-  setEntity: (type, uuid, entity) ->
+  setEntity: (type, pkey, entity) ->
     $rootScope.$apply () =>
       if !entity.desired and !entity.current
-        @data[type]['collection'].splice(
-          @data[type]['collection'].indexOf(@data[type]['items'][uuid]),
-          1)
-        delete @data[type]['items'][uuid]
-      else if @getEntity(type, uuid)
-        angular.copy entity, @data[type]['items'][uuid]
-      else
-        if @data[type]
-          @data[type]['collection'].push entity
-          @data[type]['items'][uuid] = entity
+        for col of @data[type]
+          @data[type][col]['collection'].splice(
+            @data[type][col]['collection'].indexOf(@data[type][col]['items'][pkey]),
+            1)
+          delete @data[type][col]['items'][pkey]
 
-  getEntity: (type, uuid) ->
-    if @data[type]
-      return @data[type]['items'][uuid]
+        # TODO Perhaps do something else
+        delete @data[pkey]
+
+      else
+        for col of @data[type]
+          if @data[type][col]['items'][pkey] != undefined
+            angular.copy entity, @data[type][col]['items'][pkey]
+          else
+            @data[type][col]['collection'].push entity
+            if @data[type][col]['items'][pkey] == undefined
+              @data[type][col]['items'][pkey] = entity
+            else
+              angular.extend @data[type][col]['items'][pkey], entity
+
+        if @data[pkey]
+          angular.extend(@data[pkey],entity)
 
   listenSocket: () ->
     ab.connect WS_URL, @_socketConnected, ab.log, {'caller': this}
@@ -45,6 +64,7 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
     @options.caller.abSession.resolve()
 
   _onNewMessage: (topic, event) ->
+    console.log topic,event
     @setEntity event.type, event.pkey, {current: event.current, desired: event.desired}
 
 module.factory 'dataContainer', factoryFunction
