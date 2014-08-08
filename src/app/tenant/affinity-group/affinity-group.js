@@ -26,7 +26,7 @@
         'tenant': $routeParams.tenant
       }).$promise.then(function(affinityGroupList) {
         $scope.affinityGroups = affinityGroupList;
-        return dataContainer.registerEntity('affinityGroup', $scope.affinityGroups);
+        return dataContainer.registerEntity('affinity_group', $scope.affinityGroups);
       });
       $scope.affinityGroupListModal = $modal({
         scope: $scope,
@@ -57,9 +57,6 @@
           'tenant': $routeParams.tenant
         }, function(response) {
           $scope.affinityGroup.uuid = response.uuids.POST;
-          $scope.affinityGroups.push({
-            'desired': $scope.affinityGroup
-          });
           return $scope.affinityGroupListModal.hide();
         });
       };
@@ -69,11 +66,7 @@
           'tenant': $routeParams.tenant,
           'affinity_group': uuid
         };
-        return TenantAffinityGroup["delete"](params, function() {
-          return $scope.affinityGroups = $scope.affinityGroups.filter(function(item) {
-            return item.desired.uuid !== uuid;
-          });
-        });
+        return TenantAffinityGroup["delete"](params, function() {});
       };
       $scope.deleteSelected = function(items) {
         var item, _i, _len, _results;
@@ -91,22 +84,35 @@
   })());
 
   module.controller('AffinityGroupDetailCtrl', AffinityGroupDetailCtrl = (function() {
-    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer', '$modal'];
+    AffinityGroupDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantAffinityGroup', 'TenantAffinityGroupInstanceJoin', 'TenantInstance', 'TenantAffinityGroupInstance', 'dataContainer', '$modal'];
 
-    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance, $modal) {
-      $scope.affinityGroup = TenantAffinityGroup.get({
+    function AffinityGroupDetailCtrl($scope, $routeParams, TenantAffinityGroup, TenantAffinityGroupInstanceJoin, TenantInstance, TenantAffinityGroupInstance, dataContainer, $modal) {
+      TenantAffinityGroup.get({
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
+      }).$promise.then(function(affinityGroup) {
+        $scope.affinityGroup = affinityGroup;
+        return dataContainer.registerResource($scope.affinityGroup, $scope.affinityGroup.desired.uuid);
       });
-      $scope.instances = TenantAffinityGroupInstanceJoin.list({
+      TenantAffinityGroupInstanceJoin.list({
         'tenant': $routeParams.tenant,
         'affinity_group': $routeParams.affinity_group
-      });
-      TenantInstance.list({
-        'tenant': $routeParams.tenant
-      }).$promise.then(function(allInstances) {
-        $scope.allInstances = allInstances;
-        return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
+      }).$promise.then(function(instances) {
+        $scope.instances = instances;
+        dataContainer.registerEntity('instance', $scope.instances);
+        return TenantInstance.list({
+          'tenant': $routeParams.tenant
+        }).$promise.then(function(allInstances) {
+          $scope.allInstances = allInstances;
+          $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
+          dataContainer.registerEntity('instance', $scope.allInstances);
+          $scope.$watch('allInstances', function(value) {
+            return $scope.filteredInstances = $scope.filterUsedInstances(value, $scope.instances);
+          }, true);
+          return $scope.$watch('instances', function(value) {
+            return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, value);
+          }, true);
+        });
       });
       $scope.affinityGroupEditModal = $modal({
         keyboard: true,
@@ -175,8 +181,7 @@
           desired['uuid'] = response.uuids.POST;
           instance['joined'] = {};
           instance['joined'][desired.uuid] = desired;
-          $scope.instances.push(instance);
-          return $scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances);
+          return $scope.instances.push(instance);
         });
       };
       $scope.unlink = function(instance) {
@@ -188,10 +193,9 @@
             'affinity_group': $routeParams.affinity_group,
             'instance': key
           };
-          TenantAffinityGroupInstance["delete"](params, function(response) {}, $scope.instances = $scope.instances.filter(function(item) {
+          _results.push(TenantAffinityGroupInstance["delete"](params, function(response) {}, $scope.instances = $scope.instances.filter(function(item) {
             return item.desired.uuid !== instance.desired.uuid;
-          }));
-          _results.push($scope.filteredInstances = $scope.filterUsedInstances($scope.allInstances, $scope.instances));
+          })));
         }
         return _results;
       };

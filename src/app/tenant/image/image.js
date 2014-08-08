@@ -30,7 +30,7 @@
       });
       StoragePool.list().$promise.then(function(StoragePoolList) {
         $scope.storagepools = StoragePoolList;
-        return dataContainer.registerEntity('storagepools', $scope.storagepools);
+        return dataContainer.registerEntity('storage_pool', $scope.storagepools);
       });
       $scope.filterStatus = function(actual, expected) {
         expected = expected.toLowerCase();
@@ -71,13 +71,6 @@
           'tenant': $routeParams.tenant
         }, function(response) {
           var newVolume, storagepool, _results;
-          $scope.images.push({
-            'desired': {
-              'uuid': response.uuids.POST,
-              'name': $scope.image.name,
-              'type': $scope.image.type
-            }
-          });
           _results = [];
           for (storagepool in $scope.image.storagepools) {
             if ($scope.image.storagepools[storagepool]) {
@@ -138,9 +131,15 @@
         'tenant': $routeParams.tenant,
         'image': $routeParams.image
       };
-      $scope.image = TenantImage.get(criteria);
-      $scope.volumes = TenantVolume.list({
+      TenantImage.get(criteria).$promise.then(function(image) {
+        $scope.image = image;
+        return dataContainer.registerResource($scope.image, $scope.image.desired.uuid);
+      });
+      TenantVolume.list({
         'tenant': $routeParams.tenant
+      }).$promise.then(function(volumes) {
+        $scope.volumes = volumes;
+        return dataContainer.registerEntity('volume', $scope.volumes);
       });
       $scope.storagepools = {};
       $scope.imageEditModal = $modal({
@@ -156,35 +155,42 @@
       StoragePool.list().$promise.then(function(StoragePoolList) {
         var storagepool, storagepools, _i, _len;
         storagepools = StoragePoolList;
-        dataContainer.registerEntity('storagepools', $scope.storagepools);
+        dataContainer.registerEntity('storagepool', $scope.storagepools);
         for (_i = 0, _len = storagepools.length; _i < _len; _i++) {
           storagepool = storagepools[_i];
           $scope.storagepools[storagepool.desired.uuid] = storagepool;
         }
         return TenantImageVolume.list(criteria).$promise.then(function(TenantImageList) {
-          var volume, _j, _len1, _ref, _results;
           $scope.backVolumes = TenantImageList;
-          _ref = $scope.backVolumes;
-          _results = [];
-          for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-            volume = _ref[_j];
-            if (volume.desired.storage_pool in $scope.storagepools) {
-              $scope.storagepools[volume.desired.storage_pool].used = true;
-              if (!$scope.storagepools[volume.desired.storage_pool].volumes) {
-                $scope.storagepools[volume.desired.storage_pool].volumes = [];
-                $scope.storagepools[volume.desired.storage_pool].used_space = 0;
-              }
-              $scope.storagepools[volume.desired.storage_pool].volumes.push(volume);
-              $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size;
-              $scope.imageSize = volume.desired.size;
-              _results.push($scope.image.size = $scope.imageSize);
-            } else {
-              _results.push($scope.storagepools[volume.desired.storage_pool].used = false);
-            }
-          }
-          return _results;
+          return dataContainer.registerEntity('volume', $scope.backVolumes);
         });
       });
+      $scope.$watch('backVolumes', function(value) {
+        console.log(value);
+        return $scope.refreshVolumes();
+      }, true);
+      $scope.refreshVolumes = function() {
+        var volume, _i, _len, _ref, _results;
+        _ref = $scope.backVolumes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          volume = _ref[_i];
+          if (volume.desired.storage_pool in $scope.storagepools) {
+            $scope.storagepools[volume.desired.storage_pool].used = true;
+            if (!$scope.storagepools[volume.desired.storage_pool].volumes) {
+              $scope.storagepools[volume.desired.storage_pool].volumes = [];
+              $scope.storagepools[volume.desired.storage_pool].used_space = 0;
+            }
+            $scope.storagepools[volume.desired.storage_pool].volumes.push(volume);
+            $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size;
+            $scope.imageSize = volume.desired.size;
+            _results.push($scope.image.size = $scope.imageSize);
+          } else {
+            _results.push($scope.storagepools[volume.desired.storage_pool].used = false);
+          }
+        }
+        return _results;
+      };
       $scope.open = function() {
         $scope.volumes = $scope.volumes.filter(function(item) {
           if (!(item.desired.image || item.desired.image === $routeParams.image)) {

@@ -25,7 +25,7 @@ module.controller 'ImageListCtrl',
       # TODO Could be created on demand
       StoragePool.list().$promise.then((StoragePoolList) ->
         $scope.storagepools = StoragePoolList
-        dataContainer.registerEntity('storagepools', $scope.storagepools)
+        dataContainer.registerEntity('storage_pool', $scope.storagepools)
       )
       $scope.filterStatus = (actual, expected) ->
         expected = expected.toLowerCase()
@@ -60,12 +60,6 @@ module.controller 'ImageListCtrl',
 
         newImage.$save({'tenant': $routeParams.tenant}, (response) ->
           # Construct data to push to the list.
-          $scope.images.push({'desired': {
-            'uuid': response.uuids.POST,
-            'name': $scope.image.name,
-            'type': $scope.image.type
-          }})
-
           for storagepool of $scope.image.storagepools
             # Create a backing volume for each selected storagepool
             if $scope.image.storagepools[storagepool]
@@ -108,8 +102,16 @@ module.controller 'ImageDetailCtrl',
 
     constructor: ($scope, $routeParams, TenantImage, TenantImageVolume, TenantVolume, StoragePool, dataContainer, $modal, $route) ->
       criteria = {'tenant': $routeParams.tenant, 'image': $routeParams.image}
-      $scope.image = TenantImage.get(criteria)
-      $scope.volumes = TenantVolume.list({'tenant': $routeParams.tenant})
+      TenantImage.get(criteria).$promise.then((image) ->
+        $scope.image = image
+        dataContainer.registerResource $scope.image, $scope.image.desired.uuid
+      )
+
+      TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then((volumes) ->
+        $scope.volumes = volumes
+        dataContainer.registerEntity 'volume', $scope.volumes
+      )
+
       $scope.storagepools = {}
 
       $scope.imageEditModal = $modal({scope: $scope, template: 'tenant/image/image-edit-modal.tpl.html', show: false})
@@ -117,32 +119,42 @@ module.controller 'ImageDetailCtrl',
 
       StoragePool.list().$promise.then((StoragePoolList) ->
         storagepools = StoragePoolList
-        dataContainer.registerEntity('storagepools', $scope.storagepools)
+        dataContainer.registerEntity 'storagepool', $scope.storagepools
 
         # Create a 'dict' of storagepools where keys are desired.uuids
         $scope.storagepools[storagepool.desired.uuid] = storagepool for storagepool in storagepools
 
         TenantImageVolume.list(criteria).$promise.then((TenantImageList) ->
           $scope.backVolumes = TenantImageList
-          for volume in $scope.backVolumes
-            if volume.desired.storage_pool of $scope.storagepools
-              # Determine if the storagepool is used
-              $scope.storagepools[volume.desired.storage_pool].used = true
-
-              # Create an array of volumes for each storagepool
-              unless $scope.storagepools[volume.desired.storage_pool].volumes
-                $scope.storagepools[volume.desired.storage_pool].volumes = []
-                $scope.storagepools[volume.desired.storage_pool].used_space = 0
-              $scope.storagepools[volume.desired.storage_pool].volumes.push volume
-              $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size
-
-              $scope.imageSize = volume.desired.size
-              $scope.image.size = $scope.imageSize
-
-            else
-              $scope.storagepools[volume.desired.storage_pool].used = false
-        )
+          dataContainer.registerEntity 'volume', $scope.backVolumes
+       )
       )
+
+      $scope.$watch 'backVolumes', (value) ->
+        console.log value
+        $scope.refreshVolumes()
+      , true
+
+
+      $scope.refreshVolumes = () ->
+        for volume in $scope.backVolumes
+          if volume.desired.storage_pool of $scope.storagepools
+            # Determine if the storagepool is used
+            $scope.storagepools[volume.desired.storage_pool].used = true
+
+            # Create an array of volumes for each storagepool
+            unless $scope.storagepools[volume.desired.storage_pool].volumes
+              $scope.storagepools[volume.desired.storage_pool].volumes = []
+              $scope.storagepools[volume.desired.storage_pool].used_space = 0
+            $scope.storagepools[volume.desired.storage_pool].volumes.push volume
+            $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size
+
+            $scope.imageSize = volume.desired.size
+            $scope.image.size = $scope.imageSize
+
+          else
+            $scope.storagepools[volume.desired.storage_pool].used = false
+
 
       # Open modal dialog with image details
       $scope.open = () ->
