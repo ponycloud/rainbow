@@ -137,6 +137,8 @@ def generate_methods(objName, safeName, pkey, name):
     r += '  merge%s: (uuid, newData) ->\n' % objName
     r += '    @_merge "/children/%s/%%id/desired", uuid, newData\n' % name
     r += '\n'
+    r += '  pkey: %s\n' % json.dumps(pkey)
+    r += '\n'
     r += '  %s: (id) ->\n' % objName
     r += '    return new %s this, "/children/%s/%%id/", id\n\n' % (objName, name)
     return r
@@ -150,7 +152,6 @@ def generate_class(objClass, children):
             safeName = safe_name(name)
             pkey = api_object['pkey']
             r += generate_methods(objName, safeName, pkey, name)
-
         return r
 
 
@@ -166,6 +167,9 @@ def make_patch_api():
         f_name = '  @patch' + ''.join([class_name(x) for x in path])
         f_args = '(%s)' % ', '.join([safe_name(x) for x in path])
         f_path = '/' + '/'.join(['%s/#{%s}' % (x, safe_name(x)) for x in path])+ '/'
+
+        if path[-1] is 'join':
+            continue
 
         pkey = get_pkey(entities[path[-1]]['pkey'])
         pkey_value = safe_name(path[-1])
@@ -183,24 +187,36 @@ def make_patch_api():
 
 def make_services():
 
-    r = 'toArray = (data) ->\n'
-    r += '  _.toArray(JSON.parse(data))\n'
+    r = 'res = (pkeyName) ->\n'
+    r += '  (data) ->\n'
+    r += '    data = _.toArray(JSON.parse(data))\n'
+    r += '    for item in data\n'
+    r += '      item.pkey = item.desired[pkeyName]\n'
+    r += '    data\n'
     r += 's = angular.module "rainbowServices"\n'
-    r += 'methods = {"list":  {method:"GET", isArray:true, transformResponse: toArray}, "query": {method: "GET", isArray: true, transformResponse: toArray}}\n'
     r += 'options = {"stripTrailingSlashes": false}\n'
 
     for path in api_paths:
         name = ''.join([class_name(x) for x in path])
+
         if path[-1] == 'join':
             parts = path[:-1]
             parts.append('_join')
         else:
             parts = path
+            ent = entities[path[0]]
+            for item in path[1:]:
+                ent = ent['children'][item]
+            pkeyName = ent['pkey']
+
+
+        methods = '{"patch": {method:"PATCH"}, "list":  {method:"GET", isArray:true, transformResponse: res("%s")}, "query": {method: "GET", isArray: true, transformResponse: res("%s")}}' % (pkeyName,pkeyName)
+
         url = '/' + '/'.join(['%s/:%s' % (x,x.replace('-','_')) for x in parts])
         url = '#{WEB_URL}#{API_SUFFIX}' + url
         url = url.replace(':_join', '')
         r += "s.factory \"%s\", ($resource, WEB_URL, WEB_PORT, API_SUFFIX) ->\n" % name
-        r += "\t$resource(\"%s\", {}, methods, options)\n" % url
+        r += "\t$resource(\"%s\", {}, %s, options)\n" % (url, methods)
 
     return r
 
