@@ -118,11 +118,8 @@ module.controller 'ImageDetailCtrl',
       $scope.volumeListModal = $modal({scope: $scope, template: 'tenant/image/volume-list-modal.tpl.html', show: false})
 
       StoragePool.list().$promise.then((StoragePoolList) ->
-        storagepools = StoragePoolList
+        $scope.splist = StoragePoolList
         dataContainer.registerEntity 'storagepool', $scope.storagepools
-
-        # Create a 'dict' of storagepools where keys are desired.uuids
-        $scope.storagepools[storagepool.desired.uuid] = storagepool for storagepool in storagepools
 
         TenantImageVolume.list(criteria).$promise.then((TenantImageList) ->
           $scope.backVolumes = TenantImageList
@@ -131,29 +128,31 @@ module.controller 'ImageDetailCtrl',
       )
 
       $scope.$watch 'backVolumes', (value) ->
-        console.log value
         $scope.refreshVolumes()
       , true
 
 
       $scope.refreshVolumes = () ->
-        for volume in $scope.backVolumes
-          if volume.desired.storage_pool of $scope.storagepools
-            # Determine if the storagepool is used
-            $scope.storagepools[volume.desired.storage_pool].used = true
+        unless $scope.splist
+          return
 
-            # Create an array of volumes for each storagepool
-            unless $scope.storagepools[volume.desired.storage_pool].volumes
-              $scope.storagepools[volume.desired.storage_pool].volumes = []
-              $scope.storagepools[volume.desired.storage_pool].used_space = 0
+        # Create a 'dict' of storagepools where keys are desired.uuids
+        $scope.storagepools = {}
+        $scope.storagepools[storagepool.desired.uuid] = storagepool for storagepool in $scope.splist
+        for key of $scope.storagepools
+          $scope.storagepools[key].volumes = []
+          $scope.storagepools[key].used = false
+          $scope.storagepools[key].used_space = 0
+
+        for volume in $scope.backVolumes
+          $scope.storagepools[volume.desired.storage_pool].used = true
+
+          unless volume in $scope.storagepools[volume.desired.storage_pool].volumes
             $scope.storagepools[volume.desired.storage_pool].volumes.push volume
             $scope.storagepools[volume.desired.storage_pool].used_space += volume.desired.size
 
-            $scope.imageSize = volume.desired.size
-            $scope.image.size = $scope.imageSize
-
-          else
-            $scope.storagepools[volume.desired.storage_pool].used = false
+          $scope.imageSize = volume.desired.size
+          $scope.image.size = $scope.imageSize
 
 
       # Open modal dialog with image details
@@ -187,29 +186,15 @@ module.controller 'ImageDetailCtrl',
             'storage_pool': storagepool.desired.uuid,
             'image': $scope.image.desired.uuid
         }
+
         newVolume = new TenantVolume()
         newVolume.desired = desired
-
-        newVolume.$save({'tenant': $routeParams.tenant}, (response) ->
-            # Add assigned uuid to desired
-            desired.uuid = response.uuids.POST
-            # Update model
-            pool = $scope.storagepools[storagepool.desired.uuid]
-            if !pool.volumes
-                pool.used_space = 0
-                pool.volumes = []
-            pool.used = true
-            pool.used_space += desired.size
-            pool.volumes.push {desired}
-            # Update backVolumes
-            $scope.backVolumes.push {desired}
-        )
+        newVolume.$save({'tenant': $routeParams.tenant})
 
       $scope.deallocate = (storagepool) ->
         for volume in storagepool.volumes
           params = {'tenant': $routeParams.tenant, 'volume': volume.desired.uuid }
           TenantVolume.delete(params, () ->
-            remove_volume(volume)
           )
 
       $scope.unlink = (volume) ->
@@ -221,7 +206,7 @@ module.controller 'ImageDetailCtrl',
 
         params = {'tenant': $routeParams.tenant, 'volume': volume.desired.uuid}
         TenantVolume.patch(params, patch, () ->
-          remove_volume(volume)
+          $scope.backVolumes.splice $scope.backVolumes.indexOf(volume), 1
         )
 
       # Edit the details of image
@@ -238,17 +223,4 @@ module.controller 'ImageDetailCtrl',
         TenantImage.patch(params, patch, () ->
           #$scope.message("Image modified", 'success')
           $scope.close(false)
-        )
-
-      # Utility function to clean a volume from various places
-      remove_volume = (volume) ->
-        # Remove from storagepools listing
-        $scope.storagepools[volume.desired.storage_pool].used_space -= volume.desired.size
-        $scope.storagepools[volume.desired.storage_pool].used = false
-        $scope.storagepools[volume.desired.storage_pool].volumes = []
-
-        # Remove from backing volumes
-        $scope.backVolumes = $scope.backVolumes.filter(
-          (item) ->
-            item.desired.uuid != volume.desired.uuid
         )
