@@ -65,6 +65,6 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
 
   _onNewMessage: (topic, event) ->
     console.log topic,event
-    @setEntity event.type, event.pkey, {current: event.current, desired: event.desired}
+    @setEntity event.type, event.pkey, {current: event.current, desired: event.desired, pkey: event.pkey}
 
 module.factory 'dataContainer', factoryFunction

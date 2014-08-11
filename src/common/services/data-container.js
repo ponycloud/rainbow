@@ -98,7 +98,8 @@
         console.log(topic, event);
         return this.setEntity(event.type, event.pkey, {
           current: event.current,
-          desired: event.desired
+          desired: event.desired,
+          pkey: event.pkey
         });
       }
     };
