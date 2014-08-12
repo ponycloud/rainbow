@@ -16,16 +16,22 @@
   module.controller('NetworkDetailCtrl', NetworkDetailCtrl = (function() {
     NetworkDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantSwitchNetwork', 'TenantSwitchNetworkRoute', 'dataContainer', '$modal'];
 
-    function NetworkDetailCtrl($scope, $routeParams, TenantSwitchNetwork, TenantSwitchNetworkRoute, $modal) {
-      $scope.network = TenantSwitchNetwork.get({
+    function NetworkDetailCtrl($scope, $routeParams, TenantSwitchNetwork, TenantSwitchNetworkRoute, dataContainer, $modal) {
+      TenantSwitchNetwork.get({
         'tenant': $routeParams.tenant,
         'switch': $routeParams["switch"],
         'network': $routeParams.network
+      }).$promise.then(function(network) {
+        $scope.network = network;
+        return dataContainer.registerResource($scope.network, $scope.network.desired.uuid);
       });
-      $scope.routes = TenantSwitchNetworkRoute.list({
+      TenantSwitchNetworkRoute.list({
         'tenant': $routeParams.tenant,
         'switch': $routeParams["switch"],
         'network': $routeParams.network
+      }).$promise.then(function(routes) {
+        $scope.routes = routes;
+        return dataContainer.registerEntity('route', $scope.routes);
       });
       $scope.routeModal = $modal({
         scope: $scope,
@@ -44,10 +50,6 @@
           'switch': $routeParams["switch"],
           'network': $routeParams.network
         }, function(response) {
-          $scope.route.uuid = response.uuids.POST;
-          $scope.routes.push({
-            'desired': $scope.route
-          });
           return $scope.routeModalClose();
         });
       };
@@ -59,11 +61,7 @@
           'network': $routeParams.network,
           'route': uuid
         };
-        return TenantSwitchNetworkRoute["delete"](params, function() {
-          return $scope.routes = $scope.routes.filter(function(item) {
-            return item.desired.uuid !== uuid;
-          });
-        });
+        return TenantSwitchNetworkRoute["delete"](params, function() {});
       };
       $scope.deleteSelectedRoutes = function(items) {
         var item, _i, _len, _results;

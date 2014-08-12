@@ -11,9 +11,16 @@ module.controller 'NetworkDetailCtrl',
   class NetworkDetailCtrl
     @inject = ['$scope', '$rootScope', '$routeParams', 'TenantSwitchNetwork', 'TenantSwitchNetworkRoute', 'dataContainer', '$modal']
 
-    constructor: ($scope, $routeParams, TenantSwitchNetwork, TenantSwitchNetworkRoute, $modal) ->
-      $scope.network = TenantSwitchNetwork.get({'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': $routeParams.network})
-      $scope.routes = TenantSwitchNetworkRoute.list({'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': $routeParams.network})
+    constructor: ($scope, $routeParams, TenantSwitchNetwork, TenantSwitchNetworkRoute, dataContainer, $modal) ->
+      TenantSwitchNetwork.get({'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': $routeParams.network}).$promise.then((network) ->
+        $scope.network = network
+        dataContainer.registerResource $scope.network, $scope.network.desired.uuid
+      )
+
+      TenantSwitchNetworkRoute.list({'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': $routeParams.network}).$promise.then((routes) ->
+        $scope.routes = routes
+        dataContainer.registerEntity 'route', $scope.routes
+      )
 
       $scope.routeModal = $modal({scope: $scope, template: 'tenant/network/route-modal.tpl.html', show: false})
 
@@ -21,9 +28,6 @@ module.controller 'NetworkDetailCtrl',
         newRoute = new TenantSwitchNetworkRoute()
         newRoute.desired = {'route': $scope.route.route, 'via': $scope.route.via}
         newRoute.$save({'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': $routeParams.network}, (response) ->
-          # Construct data to push to the list.
-          $scope.route.uuid = response.uuids.POST
-          $scope.routes.push({'desired': $scope.route})
           $scope.routeModalClose()
         )
 
@@ -36,10 +40,6 @@ module.controller 'NetworkDetailCtrl',
         }
 
         TenantSwitchNetworkRoute.delete(params, () ->
-          $scope.routes = $scope.routes.filter(
-            (item) ->
-              item.desired.uuid != uuid
-          )
           #$scope.message("Network deleted", 'success')
         )
 

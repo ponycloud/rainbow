@@ -27,27 +27,19 @@ module.controller 'SwitchListCtrl',
         $scope.switch = {}
 
       $scope.close = () ->
-        $scope.closeMsg = 'I was closed at: ' + new Date()
         $scope.switchListModal.hide()
-        false
 
       $scope.createSwitch = () ->
           newSwitch = new TenantSwitch()
           newSwitch.desired = {'name': $scope.switch.name, 'type': $scope.switch.type}
           newSwitch.$save({'tenant': $routeParams.tenant}, (response) ->
             # Construct data to push to the list.
-            $scope.switch.uuid = response.uuids.POST
-            $scope.switches.push({'desired': $scope.switch})
             $scope.switchListModal.hide()
           )
 
       $scope.deleteSwitch = (uuid) ->
         params = {'tenant': $routeParams.tenant, 'switch': uuid}
         TenantSwitch.delete(params, () ->
-          $scope.switches = $scope.switches.filter(
-            (item) ->
-              item.desired.uuid != uuid
-          )
           #$scope.message("Switch deleted", 'success')
         )
 
@@ -60,9 +52,16 @@ module.controller 'SwitchDetailCtrl',
   class SwitchDetailCtrl
     @inject = ['$scope', '$rootScope', '$routeParams', 'TenantSwitch', 'TenantSwitchNetwork', 'dataContainer', '$modal']
 
-    constructor: ($scope, $routeParams, TenantSwitch, TenantSwitchNetwork, $modal) ->
-      $scope.switch = TenantSwitch.get({'tenant': $routeParams.tenant, 'switch': $routeParams.switch})
-      $scope.networks = TenantSwitchNetwork.list({'tenant': $routeParams.tenant, 'switch': $routeParams.switch})
+    constructor: ($scope, $routeParams, TenantSwitch, TenantSwitchNetwork, dataContainer, $modal) ->
+      TenantSwitch.get({'tenant': $routeParams.tenant, 'switch': $routeParams.switch}).$promise.then((item) ->
+        $scope.switch = item
+        dataContainer.registerResource $scope.switch, $scope.switch.desired.uuid
+      )
+
+      TenantSwitchNetwork.list({'tenant': $routeParams.tenant, 'switch': $routeParams.switch}).$promise.then((networks) ->
+        $scope.networks = networks
+        dataContainer.registerEntity 'network', $scope.networks
+      )
 
       $scope.switchEditModal = $modal({keyboard: true, scope: $scope, template: 'tenant/switch/switch-edit-modal.tpl.html', show: false})
       $scope.networkModal = $modal({keyboard: true, scope: $scope, template: 'tenant/switch/network-list-modal.tpl.html', show: false})
@@ -78,7 +77,7 @@ module.controller 'SwitchDetailCtrl',
         params = {'tenant': $routeParams.tenant, 'switch': $scope.switch.desired.uuid}
         TenantSwitch.patch(params, patch, () ->
           $scope.close(true)
-          $scope.message("Switch modified", 'success')
+          #$scope.message("Switch modified", 'success')
         )
 
       # Open the modal of the switch details
@@ -95,19 +94,12 @@ module.controller 'SwitchDetailCtrl',
         newNetwork = new TenantSwitchNetwork()
         newNetwork.desired = {'range': $scope.network.range, 'vlan_tag': $scope.network.vlan_tag}
         newNetwork.$save({'tenant': $routeParams.tenant, 'switch': $routeParams.switch}, (response) ->
-          # Construct data to push to the list.
-          $scope.network.uuid = response.uuids.POST
-          $scope.networks.push({'desired': $scope.network})
           $scope.networkModal.hide()
         )
 
       $scope.deleteNetwork = (uuid) ->
         params = {'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': uuid}
         TenantSwitchNetwork.delete(params, () ->
-          $scope.networks = $scope.networks.filter(
-            (item) ->
-              item.desired.uuid != uuid
-          )
           #$scope.message("Network deleted", 'success')
         )
       $scope.deleteSelectedNetworks = (items) ->

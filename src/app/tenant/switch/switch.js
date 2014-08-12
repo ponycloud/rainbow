@@ -38,9 +38,7 @@
         return $scope["switch"] = {};
       };
       $scope.close = function() {
-        $scope.closeMsg = 'I was closed at: ' + new Date();
-        $scope.switchListModal.hide();
-        return false;
+        return $scope.switchListModal.hide();
       };
       $scope.createSwitch = function() {
         var newSwitch;
@@ -52,10 +50,6 @@
         return newSwitch.$save({
           'tenant': $routeParams.tenant
         }, function(response) {
-          $scope["switch"].uuid = response.uuids.POST;
-          $scope.switches.push({
-            'desired': $scope["switch"]
-          });
           return $scope.switchListModal.hide();
         });
       };
@@ -65,11 +59,7 @@
           'tenant': $routeParams.tenant,
           'switch': uuid
         };
-        return TenantSwitch["delete"](params, function() {
-          return $scope.switches = $scope.switches.filter(function(item) {
-            return item.desired.uuid !== uuid;
-          });
-        });
+        return TenantSwitch["delete"](params, function() {});
       };
       $scope.deleteSelected = function(items) {
         var item, _i, _len, _results;
@@ -89,14 +79,20 @@
   module.controller('SwitchDetailCtrl', SwitchDetailCtrl = (function() {
     SwitchDetailCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantSwitch', 'TenantSwitchNetwork', 'dataContainer', '$modal'];
 
-    function SwitchDetailCtrl($scope, $routeParams, TenantSwitch, TenantSwitchNetwork, $modal) {
-      $scope["switch"] = TenantSwitch.get({
+    function SwitchDetailCtrl($scope, $routeParams, TenantSwitch, TenantSwitchNetwork, dataContainer, $modal) {
+      TenantSwitch.get({
         'tenant': $routeParams.tenant,
         'switch': $routeParams["switch"]
+      }).$promise.then(function(item) {
+        $scope["switch"] = item;
+        return dataContainer.registerResource($scope["switch"], $scope["switch"].desired.uuid);
       });
-      $scope.networks = TenantSwitchNetwork.list({
+      TenantSwitchNetwork.list({
         'tenant': $routeParams.tenant,
         'switch': $routeParams["switch"]
+      }).$promise.then(function(networks) {
+        $scope.networks = networks;
+        return dataContainer.registerEntity('network', $scope.networks);
       });
       $scope.switchEditModal = $modal({
         keyboard: true,
@@ -128,8 +124,7 @@
           'switch': $scope["switch"].desired.uuid
         };
         return TenantSwitch.patch(params, patch, function() {
-          $scope.close(true);
-          return $scope.message("Switch modified", 'success');
+          return $scope.close(true);
         });
       };
       $scope.open = function() {
@@ -159,10 +154,6 @@
           'tenant': $routeParams.tenant,
           'switch': $routeParams["switch"]
         }, function(response) {
-          $scope.network.uuid = response.uuids.POST;
-          $scope.networks.push({
-            'desired': $scope.network
-          });
           return $scope.networkModal.hide();
         });
       };
@@ -173,11 +164,7 @@
           'switch': $routeParams["switch"],
           'network': uuid
         };
-        return TenantSwitchNetwork["delete"](params, function() {
-          return $scope.networks = $scope.networks.filter(function(item) {
-            return item.desired.uuid !== uuid;
-          });
-        });
+        return TenantSwitchNetwork["delete"](params, function() {});
       };
       $scope.deleteSelectedNetworks = function(items) {
         var item, _i, _len, _results;
