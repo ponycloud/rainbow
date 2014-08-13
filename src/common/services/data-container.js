@@ -45,10 +45,13 @@
       setEntity: function(type, pkey, entity) {
         return $rootScope.$apply((function(_this) {
           return function() {
-            var col;
+            var col, index;
             if (!entity.desired && !entity.current) {
               for (col in _this.data[type]) {
-                _this.data[type][col]['collection'].splice(_this.data[type][col]['collection'].indexOf(_this.data[type][col]['items'][pkey]), 1);
+                index = _this.data[type][col]['collection'].indexOf(_this.data[type][col]['items'][pkey]);
+                if (index > 0) {
+                  _this.data[type][col]['collection'].splice(index, 1);
+                }
                 delete _this.data[type][col]['items'][pkey];
               }
               return delete _this.data[pkey];
