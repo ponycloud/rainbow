@@ -28,7 +28,7 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
       if !entity.desired and !entity.current
         for col of @data[type]
           index = @data[type][col]['collection'].indexOf(@data[type][col]['items'][pkey])
-          if index > 0
+          if index >= 0
             @data[type][col]['collection'].splice(index, 1)
           delete @data[type][col]['items'][pkey]
 

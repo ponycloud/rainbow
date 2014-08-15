@@ -49,7 +49,7 @@
             if (!entity.desired && !entity.current) {
               for (col in _this.data[type]) {
                 index = _this.data[type][col]['collection'].indexOf(_this.data[type][col]['items'][pkey]);
-                if (index > 0) {
+                if (index >= 0) {
                   _this.data[type][col]['collection'].splice(index, 1);
                 }
                 delete _this.data[type][col]['items'][pkey];
