@@ -46,9 +46,11 @@
 
                     <div class="form-group warning">
                       <label class="col-sm-2">Size:</label>
-                      <div class="col-sm-10">
-                        <input type="number" class="form-control" name="size" ng-model="image.size">
-
+                      <div class="col-sm-4">
+                        <div class="input-group">
+                          <input type="number" class="form-control" name="size" ng-model="image.size">
+                          <div class="input-group-addon">MB</div>
+                        </div>
                         <span class="help-line label label-warning" ng-show="image.size">This should not be changed unless you know exactly what it does</span>
                         <span class="help-line label label-danger" ng-show="!image.size">Needs to be defined</span>
                       </div>

@@ -13,9 +13,9 @@ module.config ['$routeProvider', ($routeProvider) ->
 
 module.controller 'ImageListCtrl',
   class ImageListCtrl
-    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal', '$location']
+    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal, @$location) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal) ->
       # Simple list of images
       TenantImage.list({'tenant': $routeParams.tenant}).$promise.then((ImageList) ->
         $scope.images = ImageList
@@ -35,7 +35,6 @@ module.controller 'ImageListCtrl',
           return true
         return false
 
-      $scope.$location = $location
 
      # Modal initialization
       $scope.imageModal = $modal({scope: $scope, template: 'tenant/image/image-modal.tpl.html', show: false})
@@ -128,6 +127,8 @@ module.controller 'ImageDetailCtrl',
       )
 
       $scope.$watch 'backVolumes', (value) ->
+        console.log 'Refreshing volumes'
+        console.log $scope.backVolumes
         $scope.refreshVolumes()
       , true
 

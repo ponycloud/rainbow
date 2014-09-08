@@ -47,8 +47,11 @@
 
                 <div class="form-group">
                   <label class="col-sm-2">Size:</label>
-                  <div class="col-sm-2">
-                    <input class="form-control" type="number" name="size" ng-model="image.size" placeholder="in MB">
+                  <div class="col-sm-4">
+                    <div class="input-group">
+                      <input type="number" class="form-control" name="size" ng-model="image.size">
+                      <div class="input-group-addon">MB</div>
+                    </div>
                   </div>
                 </div>
 

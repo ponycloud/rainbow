@@ -162,6 +162,8 @@
         });
       });
       $scope.$watch('backVolumes', function(value) {
+        console.log('Refreshing volumes');
+        console.log($scope.backVolumes);
         return $scope.refreshVolumes();
       }, true);
       $scope.refreshVolumes = function() {
