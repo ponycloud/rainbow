@@ -16,7 +16,7 @@
     }
   ]);
 
-  app_module = angular.module('app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource', 'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable', 'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch', 'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage', 'tenantVolume', 'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork']);
+  app_module = angular.module('app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource', 'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable', 'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch', 'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage', 'tenantVolume', 'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork', 'rainbowPatchApi']);
 
   app_module.config([
     '$routeProvider', '$locationProvider', '$httpProvider', function($routeProvider, $locationProvider, $httpProvider) {
