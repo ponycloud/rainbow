@@ -1,34 +1,21 @@
-<h1></a>{{instance.desired.name}}</h1>
+<h1>{{instance.desired.name}}</h1>
+<div class="col-md-2">
+    <div class="well">
+        <span>CPU</span>
+        <span class="label label-info">{{instance.desired.vcpu}} virtual</span>
+          <span class="label label-warning" ng-display="instance.desired.rcpu>0">{{instance.desired.rcpu}} reserved<span>
+      </div>
 
+        <div>Memory</div>
+        <div>{{instance.desired.mem}}</div>
 
-<ul class="nav nav-tabs">
-	<li><a data-target="#home" data-toggle="tab">Info</a></li>
-	<li><a data-target="#network" data-toggle="tab">Network</a></li>
-	<li><a data-target="#storage" data-toggle="tab">Storage</a></li>
-</ul>
+        <div>Boot</div>
+        <div>{{instance.desired.boot}}</div>
+</div>
 
-
-<div class="tab-content">
-	<div class="tab-pane active" id="home">
-		<dl class="dl-horizontal">
-			<dt>uuid</dt>
-			<dd>{{instance.desired.uuid}}</dd>
-
-			<dt>VCPU</dt>
-			<dd>{{instance.desired.vcpu}}</dd>
-
-			<dt>RCPU</dt>
-			<dd>{{instance.desired.rcpu}}</dd>
-
-			<dt>Memory</dt>
-			<dd>{{instance.desired.mem}}</dd>
-
-			<dt>Boot</dt>
-			<dd>{{instance.desired.boot}}</dd>
-		</dl>
-
-	</div>
-	<div class="tab-pane" id="network">
+<div class="col-md-6 col-md-offset-1">
+  <div class="well">
+    <h2>Network</h2>
 		<table class="table table-striped">
 			<thead>
 			<tr>
@@ -36,32 +23,28 @@
 				<th>hw address</th>
 			</tr>
 			</thead>
-			<tr ng-repeat="vnic in vnics.items">
+			<tr ng-repeat="vnic in vnics">
 				<td>{{vnic.desired.uuid}}</td>
 				<td>{{vnic.desired.macaddr}}</td>
 			</tr>
-
 		</table>
+  </div>
 
-
-	</div>
-	<div class="tab-pane" id="storage">
+  <div class="well">
+    <h2>Storage</h2>
 		<table class="table table-striped">
 			<thead>
 			<tr>
 				<th>uuid</th>
-				<th>size</th>
+				<th>Name</th>
+				<th>Size</th>
 			</tr>
 			</thead>
-			<tr ng-repeat="vdisk in vdisks.items">
+			<tr ng-repeat="vdisk in vdisks">
 				<td>{{vdisk.desired.uuid}}</td>
-				<td>{{vdisk.desired.size}} Mb</td>
+				<td>{{vdisk.desired.name}}</td>
+				<td>{{volumeDict[vdisk.desired.volume].desired.size}} Mb</td>
 			</tr>
-
 		</table>
-	</div>
+  </div>
 </div>
-
-
-		
-

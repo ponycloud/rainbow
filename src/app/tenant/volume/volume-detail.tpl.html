@@ -1,0 +1,50 @@
+<h1>Volume "{{volume.desired.name}}"</h1>
+{{data}}
+<div class="col-md-4 well">
+    <h2>Details:</h2>
+     <ul class="nav nav-pills">
+      <li>
+        <button class="btn btn-primary" ng-click="open()">
+            <i class="glyphicon glyphicon-pencil"></i>
+            Modify
+        </button>
+      </li>
+    </ul>
+
+   <table class="table table-striped">
+      <tr>
+        <th>Name</th>
+        <td>{{volume.desired.name}}</td>
+      </tr>
+      <tr>
+        <th>Size</th>
+        <td>{{volume.desired.size|number}} MB</td>
+      </tr>
+     <tr>
+        <th>State</th>
+        <td>{{volume.desired.state}}</td>
+      </tr>
+   </table>
+</div>
+
+<div class="col-md-7 col-md-offset-1 well">
+    <h2>Available as vDisks:</h2>
+   <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>Instance</th>
+        <th>Position</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+        <tbody>
+          <tr ng-repeat="vdisk in filteredVdisks">
+            <td><a href="#/{{tenant}}/instance/{{vdisk.desired.instance}}">{{instanceDict[vdisk.desired.instance].desired.name}}</a></td>
+             <td>{{vdisk.desired.index}}</td>
+             <td>
+                 <button type="button" class="btn-danger btn" ng-click="unlink(vdisk)">Unlink</button>
+             </td>
+          </tr>
+      </tbody>
+    </table>
+</div>

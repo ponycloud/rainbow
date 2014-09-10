@@ -40,14 +40,38 @@
   })());
 
   module.controller('InstanceDetailCtrl', InstanceDetailCtrl = (function() {
-    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool'];
+    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer'];
 
-    function InstanceDetailCtrl($scope, $routeParams, TenantInstance, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool) {
+    function InstanceDetailCtrl($scope, $routeParams, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) {
       $scope.instance = TenantInstance.get({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
       });
-      $scope.vdisks = TenantInstanceVdisk.get({
+      TenantInstanceVdisk.list({
+        'tenant': $routeParams.tenant,
+        'instance': $routeParams.instance
+      }).$promise.then(function(vdisks) {
+        console.log(vdisks);
+        $scope.vdisks = vdisks;
+        return dataContainer.registerEntity('vdisk', $scope.vdisks);
+      });
+      TenantVolume.list({
+        'tenant': $routeParams.tenant
+      }).$promise.then(function(volumes) {
+        $scope.volumes = volumes;
+        dataContainer.registerEntity('volume', $scope.volume);
+        return $scope.$watch('volumes', function(value) {
+          var volume, _i, _len, _results;
+          $scope.volumeDict = {};
+          _results = [];
+          for (_i = 0, _len = value.length; _i < _len; _i++) {
+            volume = value[_i];
+            _results.push($scope.volumeDict[volume.desired.uuid] = volume);
+          }
+          return _results;
+        });
+      });
+      $scope.vdisks = TenantInstanceVdisk.list({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
       });
@@ -67,27 +91,37 @@
   })());
 
   module.controller('InstanceWizardCtrl', InstanceWizardCtrl = (function() {
-    InstanceWizardCtrl.$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantSwitchNetwork', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 'CpuProfile', 'TenantAffinityGroup'];
+    InstanceWizardCtrl.$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantSwitchNetwork', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 'CpuProfile', 'TenantAffinityGroup', 'dataContainer'];
 
-    function InstanceWizardCtrl($scope, $routeParams, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk, TenantInstanceVnic, TenantSwitch, TenantInstanceVnicAddress, TenantVolume, StoragePool, CpuProfile, TenantAffinityGroup) {
+    function InstanceWizardCtrl($scope, $routeParams, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk, TenantInstanceVnic, TenantSwitch, TenantInstanceVnicAddress, TenantVolume, StoragePool, CpuProfile, TenantAffinityGroup, dataContainer) {
       $scope.instance = {
         'selectedVolumes': [],
         'vdisks': [],
         'vnics': []
       };
-      $scope.cpu_profiles = CpuProfile.list();
-      $scope.switches = TenantSwitch.list({
+      CpuProfile.list().$promise.then(function(cp) {
+        $scope.cpu_profiles = cp;
+        return dataContainer.registerEntity('cpu_profile', $scope.cpu_profiles);
+      });
+      TenantSwitch.list({
         tenant: $routeParams.tenant
+      }).$promise.then(function(ts) {
+        $scope.switches = ts;
+        return dataContainer.registerEntity('switch', $scope.switches);
       });
       TenantVolume.list({
         tenant: $routeParams.tenant
       }).$promise.then(function(volumes) {
+        dataContainer.registerEntity('volume', $scope.volumes);
         return $scope.volumes = volumes.filter(function(item) {
-          return 'image' in item.desired;
+          return !('image' in item.desired);
         });
       });
-      $scope.affinity_groups = TenantAffinityGroup.list({
+      TenantAffinityGroup.list({
         tenant: $routeParams.tenant
+      }).$promise.then(function(ag) {
+        $scope.affinity_groups = ag;
+        return dataContainer.registerEntity('affinity_group', $scope.affinity_groups);
       });
       $scope.removeVnic = function(vnic) {
         return $scope.instance['vnics'] = $scope.instance['vnics'].filter(function(item) {

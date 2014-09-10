@@ -12,7 +12,7 @@ html {
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
-  min-height: 1000px;
+  min-height: 600px;
   padding-top: 70px;
 }
 #footer {
@@ -22,6 +22,10 @@ body {
   /* Set the fixed height of the footer here */
   height: 60px;
   background-color: #f5f5f5;
+}
+#footer .container p {
+  margin-top: 20px;
+
 }
 
 </style>
@@ -79,12 +83,22 @@ body {
               Affinity groups
             </a>
           </li>
+
+          <li class="nav-header">Storage</li>
+
           <li ng-class="{ active: path[2] == 'image' }">
             <a href="#/{{tenant}}/image">
-                <span class="glyphicon glyphicon-hdd"></span>
+                <span class="fa fa-database"></span>
                 Images
             </a>
           </li>
+          <li ng-class="{ active: path[2] == 'volume' }">
+            <a href="#/{{tenant}}/volume">
+                <span class="glyphicon glyphicon-hdd"></span>
+                Volumes
+            </a>
+          </li>
+
 
           <li class="nav-header">Networking</li>
 
@@ -127,6 +141,6 @@ body {
 
 <div id="footer">
       <div class="container">
-          <p class="text-muted">The PonyCloud Team</p>
+          <p class="text-muted">20% cooler cloud by The PonyCloud Team</p>
      </div>
 </div>

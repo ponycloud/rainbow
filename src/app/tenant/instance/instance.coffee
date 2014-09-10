@@ -27,14 +27,30 @@ module.controller 'InstanceListCtrl',
 
 module.controller 'InstanceDetailCtrl',
   class InstanceDetailCtrl
-    @$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool']
+    @$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer']
 
-    constructor: ($scope, $routeParams, TenantInstance, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool) ->
+    constructor: ($scope, $routeParams, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) ->
       $scope.instance = TenantInstance.get
         tenant: $routeParams.tenant
         instance: $routeParams.instance
 
-      $scope.vdisks = TenantInstanceVdisk.get
+      TenantInstanceVdisk.list {'tenant': $routeParams.tenant, 'instance': $routeParams.instance}
+      .$promise.then (vdisks) ->
+        console.log vdisks
+        $scope.vdisks = vdisks
+        dataContainer.registerEntity 'vdisk', $scope.vdisks
+
+      TenantVolume.list {'tenant': $routeParams.tenant}
+      .$promise.then (volumes) ->
+        $scope.volumes = volumes
+        dataContainer.registerEntity 'volume', $scope.volume
+
+        $scope.$watch 'volumes', (value) ->
+          $scope.volumeDict = {}
+          for volume in value
+            $scope.volumeDict[volume.desired.uuid] = volume
+
+      $scope.vdisks = TenantInstanceVdisk.list
         tenant: $routeParams.tenant
         instance: $routeParams.instance
 
@@ -52,33 +68,44 @@ module.controller 'InstanceWizardCtrl',
     @$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantSwitchNetwork',
                 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch',
                 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 
-                'CpuProfile', 'TenantAffinityGroup']
+                'CpuProfile', 'TenantAffinityGroup','dataContainer']
 
     constructor: ($scope, $routeParams, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk,
                   TenantInstanceVnic, TenantSwitch, TenantInstanceVnicAddress, TenantVolume,
-                  StoragePool, CpuProfile, TenantAffinityGroup) ->
+                  StoragePool, CpuProfile, TenantAffinityGroup, dataContainer) ->
 
       # Variable that should contain all information
       # about instance accross the creation wizard
       $scope.instance = {'selectedVolumes': [], 'vdisks': [], 'vnics': []}
 
-      $scope.cpu_profiles = CpuProfile.list()
-      $scope.switches = TenantSwitch.list
-                          tenant: $routeParams.tenant
+      CpuProfile.list()
+      .$promise.then (cp) ->
+        $scope.cpu_profiles = cp
+        dataContainer.registerEntity 'cpu_profile', $scope.cpu_profiles
+      TenantSwitch.list
+        tenant: $routeParams.tenant
+      .$promise.then (ts) ->
+        $scope.switches = ts
+        dataContainer.registerEntity 'switch', $scope.switches
 
 
       # List of volumes without image
       TenantVolume.list
         tenant: $routeParams.tenant
       .$promise.then((volumes) ->
+        dataContainer.registerEntity 'volume', $scope.volumes
         $scope.volumes = volumes.filter(
           (item) ->
-            'image' of item.desired
+            'image' not of item.desired
         )
       )
 
-      $scope.affinity_groups = TenantAffinityGroup.list
+      # List of affinity groups
+      TenantAffinityGroup.list
         tenant: $routeParams.tenant
+      .$promise.then (ag) ->
+        $scope.affinity_groups = ag
+        dataContainer.registerEntity 'affinity_group', $scope.affinity_groups
 
       $scope.removeVnic = (vnic) ->
         $scope.instance['vnics'] = $scope.instance['vnics'].filter(

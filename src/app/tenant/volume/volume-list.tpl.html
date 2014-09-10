@@ -1,0 +1,52 @@
+<h1>Volumes</h1>
+<div pc-multiactions>
+  <ul class="nav nav-pills">
+    <li>
+      <button class="btn btn-primary" ng-click="open()">
+          <i class="glyphicon glyphicon-plus icon-white"></i>
+          New volume
+      </button>
+    </li>
+    <li class="pull-right">
+      <input class="form-control" ng-model="search" placeholder="Filter">
+    </li>
+    <li class="pull-right">
+        <pc-multieditbutton ></pc-multieditbutton>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-responsive table-hover" pc-table="{{search}}" >
+    <thead>
+      <tr>
+        <th pc-multiall />
+        <th pc-column="desired.name">Name</th>
+        <th pc-column="desired.size">Size</th>
+        <th pc-column="desired.state">State</th>
+        <th pc-column="desired.image:filterType">Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="volume in getFiltered(filteredVolumes)">
+        <td pc-multicheck="{{ volume.desired.uuid }}"/>
+        <td><a href="#/{{tenant}}/volume/{{volume.desired.uuid}}">{{volume.desired.name}}</a></td>
+        <td>{{volume.desired.size}}</td>
+        <td>{{volume.desired.state}}</td>
+        <td>
+          <span ng-show="volume.desired.image" class="label label-info">
+              Image
+          </span>
+          <span ng-show="!volume.desired.image" class="label label-success">
+              Volume
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5" ng-show="editMode">
+          <button class="btn btn-danger" ng-click="deleteSelected(getSelected())">
+            <i class="icon-plus-sign icon-white"></i>Delete selected ({{selected.length}})
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

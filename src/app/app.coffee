@@ -13,7 +13,7 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
 app_module = angular.module 'app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource',
     'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable',
     'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch',
-    'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage',
+    'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage', 'tenantVolume',
     'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork']
 
 app_module.config ['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) ->
@@ -23,3 +23,9 @@ app_module.config ['$routeProvider', '$locationProvider', '$httpProvider', ($rou
 app_module.run ['$rootScope', '$route', ($rootScope, $route) ->
   $rootScope.messages = []
 ]
+
+
+# Aditional initializations
+$ ->
+  $ 'input[switch]'
+    .bootstrapSwitch 'state', true, true
