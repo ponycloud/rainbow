@@ -48,7 +48,8 @@ Example:
 module = angular.module 'rainbowDirectives'
 
 module.directive 'pcTable', ($parse, $filter, $compile) ->
-  restrict: 'A',
+  restrict: 'A'
+  scope: true
 
   link: (scope, element, attrs) ->
     scope.attrs = attrs

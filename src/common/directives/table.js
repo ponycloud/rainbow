@@ -54,6 +54,7 @@ Example:
   module.directive('pcTable', function($parse, $filter, $compile) {
     return {
       restrict: 'A',
+      scope: true,
       link: function(scope, element, attrs) {
         scope.attrs = attrs;
         scope.filter = $filter('filter');

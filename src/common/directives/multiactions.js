@@ -56,7 +56,8 @@ Example:
         $scope.select = function(id) {
           var pos;
           if (!$scope.isSelected(id)) {
-            return $scope.selected.push(id);
+            $scope.selected.push(id);
+            return $scope.selected = _.uniq($scope.selected);
           } else {
             pos = $scope.selected.indexOf(id);
             return $scope.selected.splice(pos, 1);
@@ -67,6 +68,7 @@ Example:
         };
         $scope.isAllSelected = function() {
           var item, _i, _len, _ref;
+          $scope.all = _.uniq($scope.all);
           _ref = $scope.all;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             item = _ref[_i];
@@ -85,6 +87,19 @@ Example:
           } else {
             return $scope.selected = $scope.all.slice(0);
           }
+        };
+        $scope.filterSearch = function(dict, pattern) {
+          var k;
+          for (k in dict) {
+            if (typeof dict[k] === "object") {
+              if ($scope.filterSearch(dict[k], pattern)) {
+                return true;
+              }
+            } else if (dict[k] === pattern) {
+              return true;
+            }
+          }
+          return false;
         };
         $scope.switchEdit = function() {
           return $scope.editMode = !$scope.editMode;

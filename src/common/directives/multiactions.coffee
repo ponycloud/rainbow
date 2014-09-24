@@ -50,6 +50,7 @@ module.directive 'pcMultiactions', ($parse, $filter, $compile) ->
     $scope.select = (id) ->
         if !$scope.isSelected id
             $scope.selected.push id
+            $scope.selected = _.uniq($scope.selected)
         else
             pos = $scope.selected.indexOf id
             $scope.selected.splice pos, 1
@@ -58,6 +59,7 @@ module.directive 'pcMultiactions', ($parse, $filter, $compile) ->
         return $scope.selected.indexOf(id) > -1
 
     $scope.isAllSelected = () ->
+        $scope.all = _.uniq($scope.all)
         for item in $scope.all
           if not $scope.filterSearch $scope.selected, item
             return false
@@ -72,9 +74,17 @@ module.directive 'pcMultiactions', ($parse, $filter, $compile) ->
         else
             $scope.selected = $scope.all[..]
 
+    $scope.filterSearch = (dict, pattern) ->
+      for k of dict
+        if typeof dict[k] == "object"
+          if $scope.filterSearch dict[k], pattern
+            return true
+        else if dict[k] == pattern
+          return true
+      return false
+
     $scope.switchEdit = () ->
         $scope.editMode = !$scope.editMode
-
 
     search = (dict, pattern) ->
       #iterate over keys and call search recursively for the value
