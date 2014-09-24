@@ -41,7 +41,7 @@ module.controller 'VolumeListCtrl',
           return true
         return false
 
-     # Modal initialization
+      # Modal initialization
       $scope.volumeModal = $modal({scope: $scope, template: 'tenant/volume/volume-modal.tpl.html', show: false})
 
       $scope.open = () ->
