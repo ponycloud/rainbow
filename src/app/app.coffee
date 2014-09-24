@@ -25,7 +25,3 @@ app_module.run ['$rootScope', '$route', ($rootScope, $route) ->
 ]
 
 
-# Aditional initializations
-$ ->
-  $ 'input[switch]'
-    .bootstrapSwitch 'state', true, true
