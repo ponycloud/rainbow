@@ -27,41 +27,96 @@ module.controller 'InstanceListCtrl',
 
 module.controller 'InstanceDetailCtrl',
   class InstanceDetailCtrl
-    @$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer']
+    @$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantVolume',
+                'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress',
+                'StoragePool', 'dataContainer']
 
-    constructor: ($scope, $routeParams, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) ->
+    constructor: ($scope, $routeParams, $modal, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) ->
+
+      $scope.instanceEditModal = $modal({keyboard: true, scope: $scope, template: 'tenant/instance/instance-edit-modal.tpl.html', show: false})
+      $scope.vnicListModal = $modal({keyboard: true, scope: $scope, template: 'tenant/instance/vnic-list-modal.tpl.html', show: false})
+      $scope.vdiskListModal = $modal({keyboard: true, scope: $scope, template: 'tenant/instance/vdisk-list-modal.tpl.html', show: false})
+
+      $scope.vdiskListClose = () ->
+        $scope.vdiskListModal.hide()
+
+      $scope.vdiskListOpen = () ->
+        $scope.vdiskListModal.show()
+
+
       $scope.instance = TenantInstance.get
         tenant: $routeParams.tenant
         instance: $routeParams.instance
 
       TenantInstanceVdisk.list {'tenant': $routeParams.tenant, 'instance': $routeParams.instance}
       .$promise.then (vdisks) ->
-        console.log vdisks
         $scope.vdisks = vdisks
         dataContainer.registerEntity 'vdisk', $scope.vdisks
 
       TenantVolume.list {'tenant': $routeParams.tenant}
       .$promise.then (volumes) ->
         $scope.volumes = volumes
-        dataContainer.registerEntity 'volume', $scope.volume
+        dataContainer.registerEntity 'volume', $scope.volumes
 
         $scope.$watch 'volumes', (value) ->
           $scope.volumeDict = {}
+          $scope.filteredVolumes = []
           for volume in value
             $scope.volumeDict[volume.desired.uuid] = volume
 
-      $scope.vdisks = TenantInstanceVdisk.list
-        tenant: $routeParams.tenant
-        instance: $routeParams.instance
+            if not volume.desired.image
+              $scope.filteredVolumes.push volume
 
-      $scope.vnics = TenantInstanceVnic.get
+
+      TenantInstanceVnic.list
         tenant: $routeParams.tenant
         instance: $routeParams.instance
+      .$promise.then (vnics) ->
+        $scope.vnics = vnics
 
       $scope.vnicIps = TenantInstanceVnic.get
         tenant: $routeParams.tenant
         instance: $routeParams.instance
         vnic: $routeParams.vnic
+
+      $scope.volumeFilter = (actual, expected) ->
+        regex = new RegExp("^"+expected, 'i')
+        nameTest = regex.test $scope.volumeDict[actual].desired.name
+        sizeTest = regex.test $scope.volumeDict[actual].desired.size
+        nameTest || sizeTest
+
+      $scope.createVdisk = (volume) ->
+        max = 0
+        for item in $scope.vdisks
+          if item.desired.index > max
+            max = item.desired.index
+
+        newVdisk = new TenantInstanceVdisk()
+        newVdisk.desired = {
+          'volume': volume.desired.uuid
+          'index': max + 1
+          'name': volume.desired.name
+        }
+
+        newVdisk.$save({'tenant': $routeParams.tenant, 'instance': $routeParams.instance}, (response) ->
+          $scope.vdiskListClose()
+          #$scope.message("Volume created", 'success')
+        )
+
+      # Plain and simple delete
+      $scope.deleteVdisk = (vdisk) ->
+        vdisk = JSON.parse(vdisk)
+        params = {'tenant': $routeParams.tenant, 'vdisk': vdisk.desired.uuid, 'instance': vdisk.desired.instance}
+
+        TenantInstanceVdisk.delete(params, () ->
+          $scope.message("Vdisk deleted", 'success')
+        )
+
+      $scope.deleteSelectedVdisks = (items) ->
+        for item in items
+          $scope.deleteVdisk item
+
+
 
 module.controller 'InstanceWizardCtrl',
   class InstanceWizardCtrl
@@ -90,15 +145,16 @@ module.controller 'InstanceWizardCtrl',
 
 
       # List of volumes without image
-      TenantVolume.list
-        tenant: $routeParams.tenant
-      .$promise.then((volumes) ->
-        dataContainer.registerEntity 'volume', $scope.volumes
-        $scope.volumes = volumes.filter(
-          (item) ->
-            'image' not of item.desired
-        )
-      )
+      TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then (VolumeList) ->
+        $scope.volumes = VolumeList
+        dataContainer.registerEntity('volume', $scope.volumes)
+
+        $scope.$watch 'volumes', (value) ->
+          $scope.filteredVolumes = $scope.volumes.filter(
+            (item) ->
+              item unless item.desired.image
+          )
+        , true
 
       # List of affinity groups
       TenantAffinityGroup.list

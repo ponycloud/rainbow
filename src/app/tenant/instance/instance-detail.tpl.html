@@ -1,50 +1,104 @@
 <h1>{{instance.desired.name}}</h1>
-<div class="col-md-2">
-    <div class="well">
-        <span>CPU</span>
-        <span class="label label-info">{{instance.desired.vcpu}} virtual</span>
-          <span class="label label-warning" ng-display="instance.desired.rcpu>0">{{instance.desired.rcpu}} reserved<span>
+<div class="row">
+  <div class="col-md-12">
+      <div class="dashboardSmallBlock">
+        <div class="value">{{instance.desired.vcpu}}</div>
+        <div class="legend">Virtual CPUs</div>
       </div>
-
-        <div>Memory</div>
-        <div>{{instance.desired.mem}}</div>
-
-        <div>Boot</div>
-        <div>{{instance.desired.boot}}</div>
+      <div class="dashboardSmallBlock">
+        <div class="value">{{instance.desired.rcpu}}</div>
+        <div class="legend">Reserved CPUs</div>
+      </div>
+      <div class="dashboardSmallBlock">
+        <div class="value">{{instance.desired.mem}}</div>
+        <div class="legend">RAM</div>
+      </div>
+      <div class="dashboardSmallBlock">
+        <div class="value">{{instance.desired.boot}}</div>
+        <div class="legend">Boot device</div>
+      </div>
+  </div>
 </div>
+<br>
+<div class="row">
+  <div class="col-md-6">
+    <div class="well">
+      <h2>Network</h2>
+      <ul class="nav nav-pills">
+        <li>
+          <button class="btn btn-primary" ng-click="openVnicModal()">
+            <i class="glyphicon glyphicon-pencil"></i>
+            Modify
+          </button>
+        </li>
+·
+        <li class="pull-right">
+          <input class="form-control" ng-model="searchvnics" placeholder="Filter">
+        </li>
+      </ul>
 
-<div class="col-md-6 col-md-offset-1">
-  <div class="well">
-    <h2>Network</h2>
-		<table class="table table-striped">
-			<thead>
-			<tr>
-				<th>uuid</th>
-				<th>hw address</th>
-			</tr>
-			</thead>
-			<tr ng-repeat="vnic in vnics">
-				<td>{{vnic.desired.uuid}}</td>
-				<td>{{vnic.desired.macaddr}}</td>
-			</tr>
-		</table>
+      <table class="table table-striped" pc-table="{{searchvnics}}">
+        <thead>
+          <tr>
+            <th pc-column="desired.macaddr">hw address</th>
+          </tr>
+        </thead>
+        <tbody ui-sortable ng-model="vnics">
+          <tr ng-repeat="vnic in getFiltered(vnics)">
+            <td>{{vnic.desired.macaddr}}</td>
+          </tr>
+        </tbody>
+        {{filterFields}}
+      </table>
+    </div>
   </div>
 
-  <div class="well">
-    <h2>Storage</h2>
-		<table class="table table-striped">
-			<thead>
-			<tr>
-				<th>uuid</th>
-				<th>Name</th>
-				<th>Size</th>
-			</tr>
-			</thead>
-			<tr ng-repeat="vdisk in vdisks">
-				<td>{{vdisk.desired.uuid}}</td>
-				<td>{{vdisk.desired.name}}</td>
-				<td>{{volumeDict[vdisk.desired.volume].desired.size}} Mb</td>
-			</tr>
-		</table>
+  <div class="col-md-6">
+    <div class="well" pc-multiactions>
+
+      <h2>Storage</h2>
+      <ul class="nav nav-pills">
+        <li>
+          <button class="btn btn-primary" ng-click="vdiskListOpen()">
+              <i class="glyphicon glyphicon-pencil"></i>
+              Modify
+          </button>
+        </li>
+
+        <li class="pull-right">
+            <input class="form-control" ng-model="searchvdisks" placeholder="Filter">
+        </li>
+        <li class="pull-right">
+            <pc-multieditbutton ></pc-multieditbutton>
+        </li>
+      </ul>
+
+      <table class="table table-striped" pc-table="{{searchvdisks}}">
+        <thead>
+        <tr>
+          <th pc-multiall />
+          <th pc-column="desired.name">Name</th>
+          <th oc-column="desired.volume:volumeFilter">Volume</th>
+          <th pc-column="desired.volume:volumeFilter">Size</th>
+        </tr>
+        </thead>
+        <tbody ui-sortable ng-model="vdisks">
+          <tr ng-repeat="vdisk in getFiltered(vdisks)">
+            <td pc-multicheck="{{ vdisk }}"/>
+            <td>{{vdisk.desired.name}}</td>
+            <td>{{volumeDict[vdisk.desired.volume].desired.name}}</td>
+            <td>{{volumeDict[vdisk.desired.volume].desired.size}} MB</td>
+          </tr>
+          <tr>
+            <td colspan="4" ng-show="editMode">
+              <button class="btn btn-danger" ng-click="deleteSelectedVdisks(getSelected())">
+                Delete selected ({{selected.length}})
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

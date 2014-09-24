@@ -40,9 +40,33 @@
   })());
 
   module.controller('InstanceDetailCtrl', InstanceDetailCtrl = (function() {
-    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer'];
+    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer'];
 
-    function InstanceDetailCtrl($scope, $routeParams, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) {
+    function InstanceDetailCtrl($scope, $routeParams, $modal, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) {
+      $scope.instanceEditModal = $modal({
+        keyboard: true,
+        scope: $scope,
+        template: 'tenant/instance/instance-edit-modal.tpl.html',
+        show: false
+      });
+      $scope.vnicListModal = $modal({
+        keyboard: true,
+        scope: $scope,
+        template: 'tenant/instance/vnic-list-modal.tpl.html',
+        show: false
+      });
+      $scope.vdiskListModal = $modal({
+        keyboard: true,
+        scope: $scope,
+        template: 'tenant/instance/vdisk-list-modal.tpl.html',
+        show: false
+      });
+      $scope.vdiskListClose = function() {
+        return $scope.vdiskListModal.hide();
+      };
+      $scope.vdiskListOpen = function() {
+        return $scope.vdiskListModal.show();
+      };
       $scope.instance = TenantInstance.get({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
@@ -51,7 +75,6 @@
         'tenant': $routeParams.tenant,
         'instance': $routeParams.instance
       }).$promise.then(function(vdisks) {
-        console.log(vdisks);
         $scope.vdisks = vdisks;
         return dataContainer.registerEntity('vdisk', $scope.vdisks);
       });
@@ -59,31 +82,86 @@
         'tenant': $routeParams.tenant
       }).$promise.then(function(volumes) {
         $scope.volumes = volumes;
-        dataContainer.registerEntity('volume', $scope.volume);
+        dataContainer.registerEntity('volume', $scope.volumes);
         return $scope.$watch('volumes', function(value) {
           var volume, _i, _len, _results;
           $scope.volumeDict = {};
+          $scope.filteredVolumes = [];
           _results = [];
           for (_i = 0, _len = value.length; _i < _len; _i++) {
             volume = value[_i];
-            _results.push($scope.volumeDict[volume.desired.uuid] = volume);
+            $scope.volumeDict[volume.desired.uuid] = volume;
+            if (!volume.desired.image) {
+              _results.push($scope.filteredVolumes.push(volume));
+            } else {
+              _results.push(void 0);
+            }
           }
           return _results;
         });
       });
-      $scope.vdisks = TenantInstanceVdisk.list({
+      TenantInstanceVnic.list({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
-      });
-      $scope.vnics = TenantInstanceVnic.get({
-        tenant: $routeParams.tenant,
-        instance: $routeParams.instance
+      }).$promise.then(function(vnics) {
+        return $scope.vnics = vnics;
       });
       $scope.vnicIps = TenantInstanceVnic.get({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance,
         vnic: $routeParams.vnic
       });
+      $scope.volumeFilter = function(actual, expected) {
+        var nameTest, regex, sizeTest;
+        regex = new RegExp("^" + expected, 'i');
+        nameTest = regex.test($scope.volumeDict[actual].desired.name);
+        sizeTest = regex.test($scope.volumeDict[actual].desired.size);
+        return nameTest || sizeTest;
+      };
+      $scope.createVdisk = function(volume) {
+        var item, max, newVdisk, _i, _len, _ref;
+        max = 0;
+        _ref = $scope.vdisks;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          item = _ref[_i];
+          if (item.desired.index > max) {
+            max = item.desired.index;
+          }
+        }
+        newVdisk = new TenantInstanceVdisk();
+        newVdisk.desired = {
+          'volume': volume.desired.uuid,
+          'index': max + 1,
+          'name': volume.desired.name
+        };
+        return newVdisk.$save({
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance
+        }, function(response) {
+          return $scope.vdiskListClose();
+        });
+      };
+      $scope.deleteVdisk = function(vdisk) {
+        var params;
+        vdisk = JSON.parse(vdisk);
+        params = {
+          'tenant': $routeParams.tenant,
+          'vdisk': vdisk.desired.uuid,
+          'instance': vdisk.desired.instance
+        };
+        return TenantInstanceVdisk["delete"](params, function() {
+          return $scope.message("Vdisk deleted", 'success');
+        });
+      };
+      $scope.deleteSelectedVdisks = function(items) {
+        var item, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
+          _results.push($scope.deleteVdisk(item));
+        }
+        return _results;
+      };
     }
 
     return InstanceDetailCtrl;
@@ -110,12 +188,17 @@
         return dataContainer.registerEntity('switch', $scope.switches);
       });
       TenantVolume.list({
-        tenant: $routeParams.tenant
-      }).$promise.then(function(volumes) {
+        'tenant': $routeParams.tenant
+      }).$promise.then(function(VolumeList) {
+        $scope.volumes = VolumeList;
         dataContainer.registerEntity('volume', $scope.volumes);
-        return $scope.volumes = volumes.filter(function(item) {
-          return !('image' in item.desired);
-        });
+        return $scope.$watch('volumes', function(value) {
+          return $scope.filteredVolumes = $scope.volumes.filter(function(item) {
+            if (!item.desired.image) {
+              return item;
+            }
+          });
+        }, true);
       });
       TenantAffinityGroup.list({
         tenant: $routeParams.tenant
