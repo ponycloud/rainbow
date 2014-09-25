@@ -68,6 +68,7 @@
         localStorage.setItem(id + '-token', data.token);
         localStorage.setItem(id + '-valid', data.valid);
         if (id === 'user') {
+          this.userTokenPromise.resolve(data.token);
           this.userTokenPromise = $q.defer();
           this.userTokenPromise.resolve(data.token);
         }

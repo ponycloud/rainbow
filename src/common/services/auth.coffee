@@ -55,6 +55,9 @@ factoryFunction = ($q, $timeout, WEB_URL, API_SUFFIX) ->
     localStorage.setItem id + '-token', data.token
     localStorage.setItem id + '-valid', data.valid
     if id == 'user'
+      # resolve promise in case someone has the old one,
+      # typically during login
+      @userTokenPromise.resolve data.token
       @userTokenPromise = $q.defer()
       @userTokenPromise.resolve data.token
 
