@@ -3,6 +3,8 @@ module = angular.module 'rainbowServices'
 factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   data: {}
   abSession: $q.defer()
+  currentTenantSubs: null
+  connected: false
 
   registerResource: (resource, pkey) ->
     @data[pkey] = resource
@@ -52,16 +54,40 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
   listenSocket: () ->
     ab.connect WS_URL, @_socketConnected, ab.log, {'caller': this}
 
+  subscribeUser: () ->
+    @subscribeWithToken(auth.getUserToken())
+
   subscribeTenant: (tenant) ->
+    if @currentTenantSubs?
+      @unsubscribeTenant()
+
+    @subscribeWithToken(auth.getTenantToken(tenant))
+
+  subscribeWithToken: (token) ->
     @abSession.promise.then () =>
-      auth.getTenantToken(tenant).then (tenantToken) =>
-        @session.auth(tenantToken).then (permissions) =>
-          @session.subscribe permissions['pubsub'][1].uri, ((topic, event) =>
-            @_onNewMessage topic, event), ab.log
+      token.then (userToken) =>
+        @session.auth(userToken).then (permissions) =>
+          for permission in permissions['pubsub']
+            console.log permission
+            @session.subscribe permission.uri, @notificationCallback, ab.log
+
+
+  notificationCallback: (topic, event) ->
+    @_onNewMessage topic, event
+
+  unsubscribeTenant: () ->
+    uri = @currentSessionSubs
+    @currentSessionSubs = null
+    @session.unsubscribe uri, @notificationCallback
+
+  isConnected: () ->
+    @connected
 
   _socketConnected: (session) ->
     @options.caller.session = session
     @options.caller.abSession.resolve()
+    @options.caller.subscribeUser()
+    @options.caller.connected = true
 
   _onNewMessage: (topic, event) ->
     console.log topic,event

@@ -6,7 +6,6 @@ module.controller 'MainCtrl',
 
     constructor: (@$scope, @$rootScope, @$routeParams, @$location, dataContainer, $route, auth, Tenant) ->
       $scope.currentTenant =  $routeParams
-      $scope.socketsActive = false
       if !auth.isLogged()
         $location.path "/login"
 
@@ -16,7 +15,7 @@ module.controller 'MainCtrl',
         $scope.activePath = $location.path().split('/').pop()
         $scope.path = $location.path().split('/')
 
-        if (auth.isLogged() && !$scope.socketsActive)
+        if (auth.isLogged() && !dataContainer.isConnected())
           dataContainer.listenSocket()
 
         if $scope.tenant != $routeParams.tenant and $routeParams.tenant
