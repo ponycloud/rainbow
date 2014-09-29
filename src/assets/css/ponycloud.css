@@ -161,3 +161,6 @@ a[ng-click] {
   border-left-color: #ccc;
   border-width: 18px;
   margin-top: -18px; }
+
+[ui-sortable] {
+  cursor: move; }
