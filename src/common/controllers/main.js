@@ -13,7 +13,6 @@
       this.$routeParams = $routeParams;
       this.$location = $location;
       $scope.currentTenant = $routeParams;
-      $scope.socketsActive = false;
       if (!auth.isLogged()) {
         $location.path("/login");
       }
@@ -21,7 +20,7 @@
       $scope.$on('$routeChangeSuccess', function() {
         $scope.activePath = $location.path().split('/').pop();
         $scope.path = $location.path().split('/');
-        if (auth.isLogged() && !$scope.socketsActive) {
+        if (auth.isLogged() && !dataContainer.isConnected()) {
           dataContainer.listenSocket();
         }
         if ($scope.tenant !== $routeParams.tenant && $routeParams.tenant) {
