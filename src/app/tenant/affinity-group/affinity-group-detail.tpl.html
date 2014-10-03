@@ -52,7 +52,7 @@
 
       <tr ng-repeat="instance in instances">
         <td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
-        <td>{{instance.desired.mem}}</td>
+        <td>{{instance.desired.mem|megabytes}}</td>
         <td>{{instance.desired.state}}</td>
         <td><span class="label label-info">{{instance.desired.vcpu}} virtual</span>
             <span class="label label-warning">{{instance.desired.rcpu}} reserved</span></td>
