@@ -16,14 +16,17 @@
                 <tr>
                   <th pc-column="desired.name">Name</th>
                   <th pc-column="desired.size">Size</th>
+                  <th>Already allocated</th>
                   <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="volume in getFiltered(filteredVolumes)">
                   <td><a href="#/{{tenant}}/volume/{{volume.desired.uuid}}" ng-click="vdiskListClose()">{{volume.desired.name}}</a></td>
-                  <td>{{volume.desired.size|number}} MB</td>
-                  <td><button type="button" class="btn-danger btn" ng-click="createVdisk(volume)">Link</button></td>
+                  <td>{{volume.desired.size|megabytes}}</td>
+                  <td ng-show="vdiskDict[volume.desired.uuid].vdisks.length > 0"><span class="label label-warning">{{vdiskDict[volume.desired.uuid].vdisks.length}} vDisks</span></td>
+                  <td ng-show="vdiskDict[volume.desired.uuid].vdisks.length == 0"><span class="label label-success">None</span></td>
+                  <td><button ng-show="!vdiskDict[volume.desired.uuid].used_here" type="button" class="btn-danger btn" ng-click="createVdisk(volume)">Link</button></td>
                 </tr>
                 </tbody>
               </table>

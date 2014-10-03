@@ -18,11 +18,21 @@
         <input type="number" pattern="[0-9]+([\.|,][0-9]+)?" step="0.1" min="0" id="rcpu" class="form-control" ng-model="instance.rcpu" placeholder="eg. 0.1">
       </div>
 
-      <div class="form-group col-md-11">
+      <div class="form-group col-md-5">
         <label for="cpu-profile">CPU profile</label>
-        <select class="form-control" ng-model="instance.cpu_profile">
-          <option ng-repeat="cpu_profile in cpu_profiles" value="cpu_profile.desired.uuid">
-            {{cpu_profile.desired.name}} ({{cpu_profile.desired.model}})
+        <select class="form-control" ng-model="instance.cpu_profile"
+          ng-options="cpu_profile.desired.uuid as cpu_profile.desired.name + ' ('+ cpu_profile.desired.model +')' for cpu_profile in cpu_profiles">
+        </select>
+      </div>
+
+      <div class="form-group col-md-5">
+        <label for="boot-device">Boot device</label>
+        <select class="form-control" ng-model="instance.boot">
+          <option value="disk">
+            Disk
+          </option>
+          <option value="network">
+            Network
           </option>
         </select>
       </div>
@@ -106,10 +116,10 @@
             <th pc-column="desired.size">Size</th>
           </tr>
         </thead>
-        <tr ng-repeat="volume in getFiltered(volumes)">
+        <tr ng-repeat="volume in getFiltered(filteredVolumes)">
           <td>{{volume.desired.name}}</td>
           <td>{{volume.desired.state}}</td>
-          <td>{{volume.desired.size|number}} MB</td>
+          <td>{{volume.desired.size|megabytes}}</td>
           <td><button class="btn btn-info" ng-show="!volume.selected" ng-click="assignVolume(volume)">Create vDisk</button>
           <button class="btn btn-danger" ng-show="volume.selected" ng-click="unassignVolume(volume)">Unassign</button></td>
         </tr>
@@ -136,7 +146,7 @@
         <tr ng-repeat="vdisk in getFiltered(instance.vdisks)">
           <td>{{vdisk.volume.desired.name}}</td>
           <td>{{vdisk.volume.desired.state}}</td>
-          <td>{{vdisk.volume.desired.size|number}} MB</td>
+          <td>{{vdisk.volume.desired.size|megabytes}}</td>
           <td>
             <button class="btn btn-danger" ng-show="vdisk.volume.selected" ng-click="unassignVolume(vdisk.volume)">Remove</button>
           </td>
@@ -160,29 +170,42 @@
     </div>
     <div ui-sortable ng-model="instance.vnics" class="col-md-8">
       <div ng-repeat="vnic in instance.vnics" class="col-md-12 well buffer">
-        <div class="col-md-4">
-        <h2>vNIC</h2>
-
-          <div class="form-group">
+        <div class="col-md-12">
+        <h2>Link layer</h2>
+          <div class="form-group col-sm-6">
+              <label for="hwaddr">HW address</label>
+              <input id="hwaddr" type="text" class="form-control" ng-model="vnic.desired.macaddr" placeholder="auto assign">
+          </div>
+          <div class="form-group col-sm-6">
             <label for="switch">Switch</label>
-            <select class="form-control" ng-model="vnic.switch" ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
+            <select id="switch" class="form-control" ng-model="vnic.switch" ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
           </div>
 
-          <div class="form-group">
-            <label for="network">Network</label>
-            <select class="form-control" ng-model="vnic.network" ng-options="network.desired.uuid as network.desired.range for network in vnic.networks"></select>
-          </div>
         </div>
 
-        <div class="col-md-8">
-          <h3>Addresses</h3>
+        <div class="col-md-12">
+          <h3>Internet layer</h3>
+          <div class="alert alert-info" ng-if="!vnic.addresses.length">
+            Add some IP addreses.
+          </div>
 
           <div ng-repeat="address in vnic.addresses">
-            <div class="form-group col-md-5">
-              <input class="form-control" ng-model="address.desired.ip" placeholder="IP address">
+
+              <div class="form-group col-md-5">
+                  <label for="network" class="col-sm-4">Network</label>
+                  <div class="col-sm-8">
+                    <select id="network" class="form-control"
+                      ng-model="address.desired.network"
+                      ng-options="network.desired.uuid as network.desired.range for network in vnic.networks">
+                    </select>
+                  </div>
+              </div>
+
+            <div class="form-group col-md-3">
+              <input class="form-control" ng-model="address.desired.ip" placeholder="IP address (auto assign)">
             </div>
-            <div class="form-group col-md-6">
-              <input class="form-control" ng-model="address.desired.ptr" placeholder="PTR">
+            <div class="form-group col-md-3">
+              <input class="form-control" ng-model="address.desired.ptr" placeholder="Pointer record (PTR)">
             </div>
             <div class="form-group col-md-1">
               <button class="btn btn-sm btn-danger" ng-click="removeAddress(address, vnic)">
@@ -191,7 +214,7 @@
             </div>
           </div>
           <div class="form-group col-md-offset-11 col-md-1">
-            <button class="btn btn-sm btn-success" ng-click="addAddress(vnic.network, vnic)">
+            <button class="btn btn-sm btn-success" ng-click="addAddress(vnic.networks[0].desired.uuid, vnic)">
               <i class="glyphicon glyphicon-plus"></i>
             </button>
           </div>

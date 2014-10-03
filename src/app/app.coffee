@@ -11,7 +11,7 @@ module.config ['$i18nextProvider', ($i18nextProvider) ->
 ]
 
 app_module = angular.module 'app', ['ngSanitize', 'ngRoute', 'ngAnimate', 'ngResource',
-    'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable',
+    'mgcrea.ngStrap', 'mgo-angular-wizard', 'ui.sortable', 'pony.bytes',
     'rainbowServices', 'rainbowDirectives', 'jm.i18next', 'tenantInstance', 'tenantSwitch',
     'tenantAffinityGroup', 'platformTenant', 'commonControllers', 'tenantImage', 'tenantVolume',
     'tenantDashboard', 'hostNetwork', 'appLogin', 'host', 'tenantNetwork']

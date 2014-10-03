@@ -40,19 +40,20 @@
   })());
 
   module.controller('InstanceDetailCtrl', InstanceDetailCtrl = (function() {
-    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantVolume', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'StoragePool', 'dataContainer'];
+    InstanceDetailCtrl.$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantVolume', 'TenantSwitch', 'TenantSwitchNetwork', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantInstanceVnicAddress', 'TenantVolumeVdisk', 'StoragePool', 'CpuProfile', 'dataContainer'];
 
-    function InstanceDetailCtrl($scope, $routeParams, $modal, TenantInstance, TenantVolume, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, StoragePool, dataContainer) {
+    function InstanceDetailCtrl($scope, $routeParams, $modal, TenantInstance, TenantVolume, TenantSwitch, TenantSwitchNetwork, TenantInstanceVdisk, TenantInstanceVnic, TenantInstanceVnicAddress, TenantVolumeVdisk, StoragePool, CpuProfile, dataContainer) {
+      var initializeVnicModal, processAddresses, refreshVdiskDict;
       $scope.instanceEditModal = $modal({
         keyboard: true,
         scope: $scope,
         template: 'tenant/instance/instance-edit-modal.tpl.html',
         show: false
       });
-      $scope.vnicListModal = $modal({
+      $scope.vnicEditModal = $modal({
         keyboard: true,
         scope: $scope,
-        template: 'tenant/instance/vnic-list-modal.tpl.html',
+        template: 'tenant/instance/vnic-edit-modal.tpl.html',
         show: false
       });
       $scope.vdiskListModal = $modal({
@@ -61,38 +62,289 @@
         template: 'tenant/instance/vdisk-list-modal.tpl.html',
         show: false
       });
-      $scope.vdiskListClose = function() {
-        return $scope.vdiskListModal.hide();
-      };
-      $scope.vdiskListOpen = function() {
-        return $scope.vdiskListModal.show();
-      };
-      $scope.instance = TenantInstance.get({
+      TenantInstance.get({
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
+      }).$promise.then(function(instance) {
+        $scope.instance = instance;
+        return dataContainer.registerResource($scope.instance, $scope.instance.desired.uuid);
       });
+      CpuProfile.list().$promise.then(function(cp) {
+        $scope.cpu_profiles = cp;
+        return dataContainer.registerEntity('cpu_profile', $scope.cpu_profiles);
+      });
+      $scope.instanceEditClose = function(reload) {
+        if (reload) {
+          TenantInstance.get({
+            tenant: $routeParams.tenant,
+            instance: $routeParams.instance
+          }).$promise.then(function(instance) {
+            return $scope.instance = instance;
+          });
+        }
+        return $scope.instanceEditModal.hide();
+      };
+      $scope.instanceEditOpen = function() {
+        return $scope.instanceEditModal.show();
+      };
+      $scope.instanceEditSave = function() {
+        var desired, params, patch;
+        params = {
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance
+        };
+        desired = $scope.instance.desired;
+        patch = [
+          {
+            op: 'x-merge',
+            path: '/desired',
+            value: {
+              name: desired.name,
+              vcpu: desired.vcpu,
+              rcpu: desired.rcpu,
+              cpu_profile: desired.cpu_profile,
+              boot: desired.boot,
+              mem: desired.mem
+            }
+          }
+        ];
+        TenantInstance.patch(params, patch);
+        return $scope.instanceEditClose();
+      };
+      $scope.instanceSetState = function(state) {
+        var params, patch;
+        params = {
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance
+        };
+        patch = [
+          {
+            op: 'x-merge',
+            path: '/desired/state',
+            value: state
+          }
+        ];
+        return TenantInstance.patch(params, patch);
+      };
+      TenantInstanceVnic.list({
+        tenant: $routeParams.tenant,
+        instance: $routeParams.instance
+      }).$promise.then(function(vnics) {
+        $scope.vnics = vnics;
+        return dataContainer.registerEntity('vnic', $scope.vnics);
+      });
+      $scope.vnicIps = TenantInstanceVnic.get({
+        tenant: $routeParams.tenant,
+        instance: $routeParams.instance,
+        vnic: $routeParams.vnic
+      });
+      $scope.sortVnics = {
+        stop: function(e, ui) {
+          var i, params, patch, vnic, _i, _len, _ref;
+          i = 0;
+          patch = [];
+          params = {
+            'tenant': $routeParams.tenant,
+            'instance': $routeParams.instance
+          };
+          _ref = $scope.vnics;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            vnic = _ref[_i];
+            patch.push({
+              'op': 'x-merge',
+              'path': '/' + vnic.desired.uuid + '/desired/index',
+              'value': i++
+            });
+          }
+          return TenantInstanceVnic.patch(params, patch);
+        }
+      };
+      initializeVnicModal = function() {
+        $scope.$watch('vnic.desired.switch', function(value) {
+          return $scope.renewNetworks(value);
+        });
+        return $scope.vnicEditModal.$promise.then(TenantSwitch.list({
+          tenant: $routeParams.tenant
+        }).$promise.then(function(ts) {
+          $scope.switches = ts;
+          if (!$scope.vnic.desired["switch"]) {
+            $scope.vnic.desired["switch"] = ts[0].desired.uuid;
+          }
+          return dataContainer.registerEntity('switch', $scope.switches);
+        }));
+      };
+      $scope.createVnic = function() {
+        $scope.vnicEditModal.show();
+        $scope.vnic = {
+          'desired': {
+            'macaddr': null,
+            'switch': null,
+            'index': null
+          },
+          'addresses': []
+        };
+        return initializeVnicModal();
+      };
+      $scope.editVnic = function(vnic) {
+        $scope.vnicEditModal.show();
+        $scope.vnic = vnic;
+        TenantInstanceVnicAddress.list({
+          tenant: $routeParams.tenant,
+          instance: $routeParams.instance,
+          vnic: vnic.desired.uuid
+        }).$promise.then(function(addresses) {
+          return $scope.vnic.addresses = addresses;
+        });
+        return initializeVnicModal();
+      };
+      $scope.vnicEditClose = function() {
+        return $scope.vnicEditModal.hide();
+      };
+      $scope.addAddress = function(networkUUID) {
+        if (!networkUUID) {
+          networkUUID = $scope.vnic.networks[0].desired.uuid;
+        }
+        return $scope.vnic.addresses.push({
+          'desired': {
+            'ip': '',
+            'ptr': '',
+            'network': networkUUID,
+            'vnic': $scope.vnic.desired.uuid
+          }
+        });
+      };
+      $scope.removeAddress = function(address) {
+        if (address.desired.uuid) {
+          return address.toDelete = true;
+        } else {
+          return $scope.vnic.addresses = $scope.vnic.addresses.filter(function(item) {
+            return item.$$hashKey !== address.$$hashKey;
+          });
+        }
+      };
+      $scope.renewNetworks = function(switchUUID) {
+        return TenantSwitchNetwork.list({
+          tenant: $routeParams.tenant,
+          "switch": switchUUID
+        }).$promise.then(function(networks) {
+          return $scope.vnic.networks = networks;
+        });
+      };
+      $scope.renewAddresses = function(networkUUID) {
+        var address, _i, _len, _ref;
+        _ref = $scope.vnic.addresses;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          address = _ref[_i];
+          address.desired.network = networkUUID;
+        }
+        if ($scope.vnic.addresses.length === 0) {
+          return $scope.addAddress(networkUUID);
+        }
+      };
+      $scope.vnicEditSave = function() {
+        var params, patch, vnic;
+        params = {
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance,
+          'vnic': $scope.vnic.desired.uuid
+        };
+        if ($scope.vnic.desired.uuid) {
+          patch = JSON.stringify([
+            {
+              'op': 'x-merge',
+              'path': '/desired',
+              'value': {
+                'macaddr': $scope.vnic.desired.macaddr,
+                'switch': $scope.vnic.desired["switch"]
+              }
+            }
+          ]);
+          TenantInstanceVnic.patch(params, patch, function(response) {
+            return processAddresses(params);
+          });
+        } else {
+          delete params.vnic;
+          if (!$scope.vnic.desired.macaddr) {
+            delete $scope.vnic.desired.macaddr;
+          }
+          vnic = new TenantInstanceVnic();
+          vnic.desired = $scope.vnic.desired;
+          vnic.$save(params, function(response) {
+            $scope.vnic.desired.uuid = response.uuids.POST;
+            params.vnic = response.uuids.POST;
+            return processAddresses(params);
+          });
+        }
+        return $scope.vnicEditClose();
+      };
+      processAddresses = function(params) {
+        var addr_patch, address, i, _i, _len, _ref;
+        addr_patch = [];
+        i = 0;
+        _ref = $scope.vnic.addresses;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          address = _ref[_i];
+          if (!address.desired.ip) {
+            delete address.desired.ip;
+          }
+          if (address.toDelete && address.desired.uuid) {
+            addr_patch.push({
+              'op': 'remove',
+              'path': '/' + address.desired.uuid
+            });
+          } else if (address.desired.uuid) {
+            addr_patch.push({
+              'op': 'x-merge',
+              'path': '/' + address.desired.uuid + '/desired',
+              'value': {
+                'ip': address.desired.ip,
+                'ptr': address.desired.ptr,
+                'network': address.desired.network
+              }
+            });
+          } else {
+            addr_patch.push({
+              'op': 'add',
+              'path': '/addr' + i++,
+              'value': {
+                'desired': address.desired
+              }
+            });
+          }
+        }
+        if (addr_patch) {
+          return TenantInstanceVnicAddress.patch(params, addr_patch);
+        }
+      };
+      $scope.deleteSelectedVnics = function(items) {
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance
+        };
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
+        }
+        return TenantInstanceVnic.patch(params, patch);
+      };
       TenantInstanceVdisk.list({
         'tenant': $routeParams.tenant,
         'instance': $routeParams.instance
       }).$promise.then(function(vdisks) {
         $scope.vdisks = vdisks;
-        return dataContainer.registerEntity('vdisk', $scope.vdisks);
-      });
-      TenantVolume.list({
-        'tenant': $routeParams.tenant
-      }).$promise.then(function(volumes) {
-        $scope.volumes = volumes;
-        dataContainer.registerEntity('volume', $scope.volumes);
-        return $scope.$watch('volumes', function(value) {
-          var volume, _i, _len, _results;
-          $scope.volumeDict = {};
-          $scope.filteredVolumes = [];
+        dataContainer.registerEntity('vdisk', $scope.vdisks);
+        return $scope.$watchCollection('vdisks', function(newVals, oldVals) {
+          var item, _i, _len, _results;
           _results = [];
-          for (_i = 0, _len = value.length; _i < _len; _i++) {
-            volume = value[_i];
-            $scope.volumeDict[volume.desired.uuid] = volume;
-            if (!volume.desired.image) {
-              _results.push($scope.filteredVolumes.push(volume));
+          for (_i = 0, _len = newVals.length; _i < _len; _i++) {
+            item = newVals[_i];
+            if (jQuery.inArray(item, oldVals) < 0 || newVals.length !== oldVals.length) {
+              _results.push(refreshVdiskDict($scope.filteredVolumes));
             } else {
               _results.push(void 0);
             }
@@ -100,67 +352,130 @@
           return _results;
         });
       });
-      TenantInstanceVnic.list({
-        tenant: $routeParams.tenant,
-        instance: $routeParams.instance
-      }).$promise.then(function(vnics) {
-        return $scope.vnics = vnics;
+      TenantVolume.list({
+        'tenant': $routeParams.tenant
+      }).$promise.then(function(VolumeList) {
+        $scope.volumes = VolumeList;
+        dataContainer.registerEntity('volume', $scope.volumes);
+        return $scope.$watchCollection('volumes', function(newVals, oldVals) {
+          var volume, _i, _j, _len, _len1, _results;
+          $scope.filteredVolumes = [];
+          for (_i = 0, _len = newVals.length; _i < _len; _i++) {
+            volume = newVals[_i];
+            if (!volume.desired.image) {
+              $scope.filteredVolumes.push(volume);
+            }
+          }
+          refreshVdiskDict($scope.filteredVolumes);
+          $scope.volumeDict = {};
+          _results = [];
+          for (_j = 0, _len1 = newVals.length; _j < _len1; _j++) {
+            volume = newVals[_j];
+            _results.push($scope.volumeDict[volume.desired.uuid] = volume);
+          }
+          return _results;
+        });
       });
-      $scope.vnicIps = TenantInstanceVnic.get({
-        tenant: $routeParams.tenant,
-        instance: $routeParams.instance,
-        vnic: $routeParams.vnic
-      });
-      $scope.volumeFilter = function(actual, expected) {
-        var nameTest, regex, sizeTest;
-        regex = new RegExp("^" + expected, 'i');
-        nameTest = regex.test($scope.volumeDict[actual].desired.name);
-        sizeTest = regex.test($scope.volumeDict[actual].desired.size);
-        return nameTest || sizeTest;
+      $scope.sortVdisks = {
+        stop: function(e, ui) {
+          var i, params, patch, vdisk, _i, _len, _ref;
+          i = 0;
+          patch = [];
+          params = {
+            'tenant': $routeParams.tenant,
+            'instance': $routeParams.instance
+          };
+          _ref = $scope.vdisks;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            vdisk = _ref[_i];
+            patch.push({
+              'op': 'x-merge',
+              'path': '/' + vdisk.desired.uuid + '/desired/index',
+              'value': i++
+            });
+          }
+          return TenantInstanceVdisk.patch(params, patch);
+        }
+      };
+      $scope.vdiskListClose = function() {
+        return $scope.vdiskListModal.hide();
+      };
+      $scope.vdiskListOpen = function() {
+        return $scope.vdiskListModal.show();
+      };
+      refreshVdiskDict = function(volumes) {
+        var uuid, volume, _fn, _i, _len;
+        if (!$scope.vdiskDict) {
+          $scope.vdiskDict = {};
+        }
+        if (!volumes) {
+          return;
+        }
+        _fn = function(uuid) {
+          return TenantVolumeVdisk.list({
+            'tenant': $routeParams.tenant,
+            'volume': uuid
+          }).$promise.then(function(vdisks) {
+            $scope.vdiskDict[uuid] = {
+              vdisks: vdisks,
+              used_here: false
+            };
+            return (function(vdisks) {
+              var vdisk, _j, _len1, _results;
+              _results = [];
+              for (_j = 0, _len1 = vdisks.length; _j < _len1; _j++) {
+                vdisk = vdisks[_j];
+                if (vdisk.desired.instance === $routeParams.instance) {
+                  _results.push($scope.vdiskDict[uuid].used_here = true);
+                } else {
+                  _results.push(void 0);
+                }
+              }
+              return _results;
+            })(vdisks);
+          });
+        };
+        for (_i = 0, _len = volumes.length; _i < _len; _i++) {
+          volume = volumes[_i];
+          uuid = volume.desired.uuid;
+          _fn(uuid);
+        }
+        console.log($scope.vdiskDict);
+        return $scope.volumeFilter = function(actual, expected) {
+          var nameTest, regex, sizeTest;
+          regex = new RegExp("^" + expected, 'i');
+          nameTest = regex.test($scope.volumeDict[actual].desired.name);
+          sizeTest = regex.test($scope.volumeDict[actual].desired.size);
+          return nameTest || sizeTest;
+        };
       };
       $scope.createVdisk = function(volume) {
-        var item, max, newVdisk, _i, _len, _ref;
-        max = 0;
-        _ref = $scope.vdisks;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          item = _ref[_i];
-          if (item.desired.index > max) {
-            max = item.desired.index;
-          }
-        }
+        var newVdisk;
         newVdisk = new TenantInstanceVdisk();
         newVdisk.desired = {
           'volume': volume.desired.uuid,
-          'index': max + 1,
           'name': volume.desired.name
         };
         return newVdisk.$save({
           'tenant': $routeParams.tenant,
           'instance': $routeParams.instance
-        }, function(response) {
-          return $scope.vdiskListClose();
-        });
-      };
-      $scope.deleteVdisk = function(vdisk) {
-        var params;
-        vdisk = JSON.parse(vdisk);
-        params = {
-          'tenant': $routeParams.tenant,
-          'vdisk': vdisk.desired.uuid,
-          'instance': vdisk.desired.instance
-        };
-        return TenantInstanceVdisk["delete"](params, function() {
-          return $scope.message("Vdisk deleted", 'success');
-        });
+        }, function(response) {});
       };
       $scope.deleteSelectedVdisks = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          'tenant': $routeParams.tenant,
+          'instance': $routeParams.instance
+        };
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push($scope.deleteVdisk(item));
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantInstanceVdisk.patch(params, patch);
       };
     }
 
@@ -175,16 +490,20 @@
       $scope.instance = {
         'selectedVolumes': [],
         'vdisks': [],
-        'vnics': []
+        'vnics': [],
+        'boot': 'disk',
+        'ns': []
       };
       CpuProfile.list().$promise.then(function(cp) {
         $scope.cpu_profiles = cp;
+        $scope.instance.cpu_profile = cp[0].desired.uuid;
         return dataContainer.registerEntity('cpu_profile', $scope.cpu_profiles);
       });
       TenantSwitch.list({
         tenant: $routeParams.tenant
       }).$promise.then(function(ts) {
         $scope.switches = ts;
+        $scope.instance.vnics[0]["switch"] = ts[0].desired.uuid;
         return dataContainer.registerEntity('switch', $scope.switches);
       });
       TenantVolume.list({
@@ -192,13 +511,13 @@
       }).$promise.then(function(VolumeList) {
         $scope.volumes = VolumeList;
         dataContainer.registerEntity('volume', $scope.volumes);
-        return $scope.$watch('volumes', function(value) {
+        return $scope.$watchCollection('volumes', function(newVals, oldVals) {
           return $scope.filteredVolumes = $scope.volumes.filter(function(item) {
             if (!item.desired.image) {
               return item;
             }
           });
-        }, true);
+        });
       });
       TenantAffinityGroup.list({
         tenant: $routeParams.tenant
@@ -212,9 +531,13 @@
         });
       };
       $scope.addVnic = function() {
-        var c;
+        var c, defSwitch;
+        defSwitch = null;
+        if ($scope.switches) {
+          defSwitch = $scope.switches[0].desired.uuid;
+        }
         c = $scope.instance.vnics.push({
-          'switch': null,
+          'switch': defSwitch,
           'network': null,
           'addresses': []
         });
@@ -264,7 +587,7 @@
           "switch": switchUUID
         }).$promise.then(function(networks) {
           $scope.instance.vnics[index].networks = networks;
-          return $scope.renewAddresses('', index);
+          return $scope.renewAddresses(networks[0].desired.uuid, index);
         });
       };
       $scope.assignVolume = function(volume) {

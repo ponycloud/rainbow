@@ -1,0 +1,83 @@
+<div class="modal" close="vnicEditClose()">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="vnicEditClose()">
+                    ×
+                </button>
+                <h3 id="myModalLabel">Edit vNIC</h3>
+            </div>
+            <div class="modal-body">
+              <form class="modal-form">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>Link layer</h3>
+                        <div class="form-group col-md-6">
+                            <label class="col-sm-5">HW address:</label>
+
+                            <div class="col-sm-7">
+                                <input type="text" placeholder="auto assign" id="macaddr" class="form-control" ng-model="vnic.desired.macaddr">
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="switch" class="col-sm-5">Switch</label>
+
+                            <div class="col-sm-7">
+                                <select class="form-control" ng-model="vnic.desired.switch"
+                                        ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <h3>Internet layer</h3>
+
+                        <div class="alert alert-info" ng-if="!vnic.desired.switch">
+                          Select a switch.
+                        </div>
+
+                        <div class="alert alert-info" ng-if="!vnic.addresses.length && vnic.desired.switch">
+                          Add some IP addreses.
+                        </div>
+
+                        <div ng-repeat="address in vnic.addresses">
+                          <div ng-if="!address.toDelete">
+                            <div class="form-group col-md-4">
+                                <label for="network" class="col-md-3">Network</label>
+                                <div class="col-sm-9">
+                                  <select class="form-control" ng-model="address.desired.network"
+                                          ng-options="network.desired.uuid as network.desired.range for network in vnic.networks"></select>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <input class="form-control" ng-model="address.desired.ip" placeholder="IP address (auto assign)">
+                            </div>
+                            <div class="form-group col-md-3">
+                                <input class="form-control" ng-model="address.desired.ptr" placeholder="Pointer record (PTR)">
+                            </div>
+                            <div class="form-group col-md-1">
+                                <div class="btn btn-sm btn-danger" ng-click="removeAddress(address)">
+                                    <i class="glyphicon glyphicon-minus"></i>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-group col-md-offset-11 col-md-1" ng-if="vnic.desired.switch">
+                            <div class="btn btn-sm btn-success" ng-click="addAddress(vnic.desired.network)">
+                                <i class="glyphicon glyphicon-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="vnicEditClose()">Close</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" ng-click="vnicEditSave()">Save</button>
+            </div>
+            </div>
+          </form>
+        </div>
+    </div>
+</div>
+

@@ -41,9 +41,9 @@
       <td><a href="#/{{tenant}}/instance/{{instance.desired.uuid}}">{{instance.desired.name}}</a></td>
       <td>
         <span class="label label-info">{{instance.desired.vcpu}} virtual</span>
-        <span class="label label-warning">{{instance.desired.rcpu}} reserved</span>
+        <span class="label label-warning" ng-show="instance.desired.rcpu > 0">{{instance.desired.rcpu}} reserved</span>
       </td>
-      <td><span class="label label-default">{{instance.desired.mem}}</span> <span class="animate">&raquo;</span> <span class="label label-info">2048</span> Mb</td>
+      <td><span class="label label-default">{{instance.desired.mem|megabytes}}</span> <span class="animate">&raquo;</span> <span class="label label-info">{{2048|megabytes}}</span></td>
       <td>
         <span class="label label-default">{{instance.desired.state}}</span> &raquo; <span class="label label-info">stopped</span>
       </td>

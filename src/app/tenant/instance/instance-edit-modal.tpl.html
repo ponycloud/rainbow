@@ -1,0 +1,79 @@
+<div class="modal" close="instanceEditClose(true)">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="instanceEditClose(true)">×</button>
+              <h3 id="myModalLabel">Manage instance</h3>
+            </div>
+            <div class="modal-body">
+              <div class="well row">
+                <div class="form-group col-md-11">
+                  <label for="name">Name</label>
+                  <input type="text" id="name" class="form-control" ng-model="instance.desired.name">
+                </div>
+
+                <div class="form-group col-md-5">
+                  <label for="vcpu">Virtual CPUs</label>
+                  <input type="number" min="1" id="vcpu" class="form-control" ng-model="instance.desired.vcpu" placeholder="eg. 2">
+                </div>
+
+                <div class="form-group col-md-5">
+                  <label for="rcpu">Reserved CPUs</label>
+                  <input type="number" pattern="[0-9]+([\.|,][0-9]+)?" step="0.1" min="0" id="rcpu" class="form-control" ng-model="instance.desired.rcpu" placeholder="eg. 0.1">
+                </div>
+
+                <div class="form-group col-md-5">
+                  <label for="cpu-profile">CPU profile</label>
+                  <select class="form-control" ng-model="instance.desired.cpu_profile"
+                    ng-options="cpu_profile.desired.uuid as cpu_profile.desired.name + ' ('+ cpu_profile.desired.model +')' for cpu_profile in cpu_profiles">
+                  </select>
+                </div>
+
+                <div class="form-group col-md-5">
+                  <label for="boot-device">Boot device</label>
+                  <select class="form-control" ng-model="instance.desired.boot">
+                    <option value="disk">
+                      Disk
+                    </option>
+                    <option value="network">
+                      Network
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group col-md-12">
+                  <label for="rcpu">RAM size</label>
+                  <div class="btn-group">
+                    <label class="btn btn-default" ng-class="{active: instance.desired.mem=='1024'}">
+                      <input type="radio" ng-model="instance.desired.mem" class="hidden" value="1024">1GB
+                    </label>
+                    <label class="btn btn-default" ng-class="{active: instance.desired.mem=='2048'}">
+                      <input type="radio" ng-model="instance.desired.mem" class="hidden" value="2048">2GB
+                    </label>
+                    <label class="btn btn-default" ng-class="{active: instance.desired.mem=='4096'}">
+                      <input type="radio" ng-model="instance.desired.mem" class="hidden" value="4096">4GB
+                    </label>
+                    <label class="btn btn-default" ng-class="{active: instance.desired.mem=='8192'}">
+                      <input type="radio" ng-model="instance.desired.mem" class="hidden" value="8192">8GB
+                    </label>
+                    <label class="btn btn-default" ng-class="{active: instance.desired.mem=='16384'}">
+                      <input type="radio" ng-model="instance.desired.mem" class="hidden" value="16384">16GB
+                    </label>
+                    <div class="form-group col-md-4">
+                      <div class="input-group">
+                          <input type="text" class="form-control" ng-model="instance.desired.mem" placeholder="Other">
+                          <div class="input-group-addon">MB</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="instanceEditClose(true)">Close</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" ng-click="instanceEditSave()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+

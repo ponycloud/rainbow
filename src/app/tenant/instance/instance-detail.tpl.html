@@ -5,54 +5,102 @@
         <div class="value">{{instance.desired.vcpu}}</div>
         <div class="legend">Virtual CPUs</div>
       </div>
-      <div class="dashboardSmallBlock">
+      <div class="dashboardSmallBlock" ng-show="instance.desired.rcpu > 0">
         <div class="value">{{instance.desired.rcpu}}</div>
         <div class="legend">Reserved CPUs</div>
       </div>
       <div class="dashboardSmallBlock">
-        <div class="value">{{instance.desired.mem}}</div>
+        <div class="value">{{instance.desired.mem|megabytes}}</div>
         <div class="legend">RAM</div>
       </div>
       <div class="dashboardSmallBlock">
         <div class="value">{{instance.desired.boot}}</div>
         <div class="legend">Boot device</div>
       </div>
+
+       <ul class="nav nav-pills">
+        <li class="pull-right">
+          <button class="btn btn-primary" ng-click="instanceEditOpen()">
+              <i class="glyphicon glyphicon-cloud"></i>
+              Edit instance
+          </button>
+
+         <button ng-disabled="instance.desired.state == 'running'" class="btn btn-success breathing" ng-click="instanceSetState('running')">
+            <i class="fa fa-power-off"></i>
+            Run
+         </button>
+
+         <button ng-disabled="instance.desired.state == 'stopped'" class="btn btn-danger" ng-click="instanceSetState('stopped')">
+            <i class="fa fa-power-off"></i>
+            Stop
+         </button>
+
+         <button ng-disabled="instance.desired.state == 'paused'" class="btn btn-warning" ng-click="instanceSetState('paused')">
+            <i class="fa fa-pause"></i>
+            Pause
+         </button>
+
+        </li>
+      </ul>
+
+
   </div>
 </div>
 <br>
 <div class="row">
   <div class="col-md-6">
-    <div class="well">
+    <div class="well" pc-multiactions>
       <h2>Network</h2>
       <ul class="nav nav-pills">
         <li>
-          <button class="btn btn-primary" ng-click="openVnicModal()">
-            <i class="glyphicon glyphicon-pencil"></i>
-            Modify
+          <button class="btn btn-primary" ng-click="createVnic()">
+            <i class="glyphicon glyphicon-plus"></i>
+            Add new vNIC
           </button>
         </li>
-·
+
         <li class="pull-right">
           <input class="form-control" ng-model="searchvnics" placeholder="Filter">
         </li>
+
+        <li class="pull-right">
+            <pc-multieditbutton ></pc-multieditbutton>
+        </li>
+
       </ul>
 
       <table class="table table-striped" pc-table="{{searchvnics}}">
         <thead>
           <tr>
-            <th pc-column="desired.macaddr">hw address</th>
+            <th pc-multiall />
+            <th colspan="2" pc-column="desired.macaddr:true:false">MAC address</th>
           </tr>
         </thead>
-        <tbody ui-sortable ng-model="vnics">
+        <tbody ng-model="vnics" ui-sortable="sortVnics">
           <tr ng-repeat="vnic in getFiltered(vnics)">
+            <td pc-multicheck="{{ vnic.desired.uuid }}"/>
             <td>{{vnic.desired.macaddr}}</td>
+            <td>
+                <button class="btn btn-info" ng-click="editVnic(vnic)">Edit</button>
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="4" ng-show="editMode">
+              <button class="btn btn-danger" ng-click="deleteSelectedVnics(getSelected())">
+                Delete selected ({{selected.length}})
+              </button>
+            </td>
           </tr>
         </tbody>
-        {{filterFields}}
       </table>
+
+      <div class="alert alert-info" ng-show="vnics.length == 0">
+        No vNICs assigned.
+      </div>
+
     </div>
   </div>
-
   <div class="col-md-6">
     <div class="well" pc-multiactions>
 
@@ -60,8 +108,8 @@
       <ul class="nav nav-pills">
         <li>
           <button class="btn btn-primary" ng-click="vdiskListOpen()">
-              <i class="glyphicon glyphicon-pencil"></i>
-              Modify
+              <i class="glyphicon glyphicon-hdd"></i>
+              Add vDisks
           </button>
         </li>
 
@@ -77,20 +125,18 @@
         <thead>
         <tr>
           <th pc-multiall />
-          <th pc-column="desired.name">Name</th>
-          <th oc-column="desired.volume:volumeFilter">Volume</th>
-          <th pc-column="desired.volume:volumeFilter">Size</th>
+          <th pc-column="desired.volume">Volume</th>
+          <th pc-column="desired.volume">Size</th>
         </tr>
         </thead>
-        <tbody ui-sortable ng-model="vdisks">
-          <tr ng-repeat="vdisk in getFiltered(vdisks)">
-            <td pc-multicheck="{{ vdisk }}"/>
-            <td>{{vdisk.desired.name}}</td>
+        <tbody ui-sortable="sortVdisks" ng-model="vdisks">
+         <tr ng-repeat="vdisk in getFiltered(vdisks)">
+            <td pc-multicheck="{{ vdisk.desired.uuid }}"/>
             <td>{{volumeDict[vdisk.desired.volume].desired.name}}</td>
-            <td>{{volumeDict[vdisk.desired.volume].desired.size}} MB</td>
+            <td>{{volumeDict[vdisk.desired.volume].desired.size|megabytes}}</td>
           </tr>
           <tr>
-            <td colspan="4" ng-show="editMode">
+            <td colspan="3" ng-show="editMode">
               <button class="btn btn-danger" ng-click="deleteSelectedVdisks(getSelected())">
                 Delete selected ({{selected.length}})
               </button>
@@ -99,6 +145,11 @@
 
         </tbody>
       </table>
+
+      <div class="alert alert-info" ng-show="vdisks.length == 0">
+        No vDisks assigned.
+      </div>
+
     </div>
   </div>
 </div>
