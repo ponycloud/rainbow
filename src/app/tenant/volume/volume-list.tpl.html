@@ -14,7 +14,6 @@
         <pc-multieditbutton ></pc-multieditbutton>
     </li>
   </ul>
-
   <table class="table table-striped table-responsive table-hover" pc-table="{{search}}" >
     <thead>
       <tr>
@@ -22,21 +21,21 @@
         <th pc-column="desired.name">Name</th>
         <th pc-column="desired.size">Size</th>
         <th pc-column="desired.state">State</th>
-        <th pc-column="desired.image:filterType">Type</th>
+        <th>Initializing</th>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="volume in getFiltered(filteredVolumes)">
         <td pc-multicheck="{{ volume.desired.uuid }}"/>
         <td><a href="#/{{tenant}}/volume/{{volume.desired.uuid}}">{{volume.desired.name}}</a></td>
-        <td>{{volume.desired.size}}</td>
+        <td>{{volume.desired.size|megabytes}}</td>
         <td>{{volume.desired.state}}</td>
         <td>
-          <span ng-show="volume.desired.image" class="label label-info">
-              Image
+          <span ng-show="volume.desired.base_image" class="label label-info">
+              Initializing
           </span>
-          <span ng-show="!volume.desired.image" class="label label-success">
-              Volume
+          <span ng-show="!volume.desired.base_image" class="label label-success">
+              Initialized
           </span>
         </td>
       </tr>

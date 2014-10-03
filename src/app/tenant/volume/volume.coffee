@@ -13,25 +13,73 @@ module.config ['$routeProvider', ($routeProvider) ->
 
 module.controller 'VolumeListCtrl',
   class VolumeListCtrl
-    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantVolume', 'StoragePool', 'dataContainer', '$modal']
+    @inject = ['$scope', '$rootScope', '$routeParams', 'TenantVolume', 'StoragePool', 'TenantImage', 'Image', 'ImageVolume', 'dataContainer', '$modal']
 
-    constructor: ($scope, $rootScope, $routeParams, TenantVolume, StoragePool, dataContainer, $modal) ->
+    constructor: ($scope, $rootScope, $routeParams, TenantVolume, StoragePool, TenantImage, Image, ImageVolume, dataContainer, $modal) ->
+
       # Simple list of volumes
       TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then (VolumeList) ->
         $scope.volumes = VolumeList
         dataContainer.registerEntity('volume', $scope.volumes)
 
-      $scope.$watch 'volumes', (value) ->
-        console.log('Filtering volumes...')
-        $scope.filteredVolumes = $scope.volumes.filter(
-          (item) ->
-            item unless item.desired.image
-        )
-      , true
+        $scope.$watchCollection 'volumes', (newVal, oldVal) ->
+          $scope.filteredVolumes = newVal.filter(
+            (item) ->
+              item unless item.desired.image
+          )
+
+      $scope.$watch 'volume.base_image', (value) ->
+        setDefaultVolumeSize(value)
+
+      $scope.$watch 'volume.initialize', (value) ->
+        if !value
+          $scope.volume.size = null
+        else
+          setDefaultVolumeSize($scope.volume.base_image)
 
       StoragePool.list().$promise.then (StoragePoolList) ->
         $scope.storagepools = StoragePoolList
         dataContainer.registerEntity 'storagepool', $scope.storagepools
+
+      Image.list().$promise.then (ImageList) ->
+        $scope.globalImages = ImageList
+        dataContainer.registerEntity 'image', $scope.images
+
+      TenantImage.list({'tenant': $routeParams.tenant}).$promise.then (ImageList) ->
+        $scope.images = ImageList
+        dataContainer.registerEntity 'image', $scope.images
+
+        $scope.$watchCollection 'images', (newVal, oldVal) ->
+          # ImageDict is a simple dict keyed by storage pools that is used
+          # for peeking in which storage pools a particular image
+          # is available.
+          unless $scope.imageDict
+            $scope.imageDict = {}
+
+          unless $scope.imageSize
+            $scope.imageSize = {}
+
+          for volume in $scope.volumes
+            for image in newVal
+              if volume.desired.image
+                unless $scope.imageDict[volume.desired.storage_pool]
+                  $scope.imageDict[volume.desired.storage_pool] = []
+                $scope.imageDict[volume.desired.storage_pool].push(volume.desired.image)
+
+                # Get the size
+                $scope.imageSize[volume.desired.image] = volume.desired.size
+
+      setDefaultVolumeSize = (image) ->
+        unless $scope.volume.size == 0
+          $scope.volume.size = $scope.imageSize[image]
+
+      $scope.getFilteredImages = (storage_pool) ->
+        # TODO filter globalImages for available
+        rval = []
+        for image in $scope.images
+          if image.desired.uuid in $scope.imageDict[storage_pool]
+            rval.push image
+        return rval.concat $scope.globalImages
 
       $scope.filterType = (actual, expected) ->
         expected = expected.toLowerCase()
@@ -45,7 +93,9 @@ module.controller 'VolumeListCtrl',
       $scope.volumeModal = $modal({scope: $scope, template: 'tenant/volume/volume-modal.tpl.html', show: false})
 
       $scope.open = () ->
-        $scope.volume = {'storagepools': {}}
+        $scope.volume = 
+          storagepools: {}
+          desired: {}
         $scope.volumeModal.show()
 
       $scope.close = () ->
@@ -61,6 +111,9 @@ module.controller 'VolumeListCtrl',
           'size': $scope.volume.size,
           'storage_pool': $scope.volume.storagepool,
         }
+
+        if $scope.volume.initialize
+          newVolume.desired.base_image = $scope.volume.base_image
 
         newVolume.$save({'tenant': $routeParams.tenant}, (response) ->
           $scope.close()
