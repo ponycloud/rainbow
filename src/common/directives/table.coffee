@@ -59,7 +59,7 @@ module.directive 'pcTable', ($parse, $filter, $compile) ->
   controller: ($scope) ->
     $scope.filterFields = []
     $scope.sortFields = {}
-    $scope.currentSort = 'desired.name'
+    $scope.currentSort = 'desired.index'
     $scope.reverse = false
 
     $scope.getFiltered = (data) ->
