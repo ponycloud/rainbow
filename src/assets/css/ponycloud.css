@@ -34,7 +34,7 @@ h2 {
 
 .dashboardSmallBlock {
   background-color: white;
-  width: 100px;
+  min-width: 100px;
   height: 100px;
   float: left;
   margin-right: 10px;
@@ -44,40 +44,32 @@ h2 {
 .dashboardSmallBlock .value {
   font-size: 35px; }
 
-@-webkit-keyframes fadeout {
+@-webkit-keyframes $animation_name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.2; }
-
   100% {
     opacity: 1.0; } }
-@-moz-keyframes fadeout {
+@-moz-keyframes $animation_name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.2; }
-
   100% {
     opacity: 1.0; } }
-@-o-keyframes fadeout {
+@-o-keyframes $animation_name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.2; }
-
   100% {
     opacity: 1.0; } }
-@keyframes fadeout {
+@keyframes $animation_name {
   0% {
     opacity: 1.0; }
-
   50% {
     opacity: 0.2; }
-
   100% {
     opacity: 1.0; } }
 .animate {
@@ -164,3 +156,25 @@ a[ng-click] {
 
 [ui-sortable] {
   cursor: move; }
+
+@-webkit-keyframes breathing {
+  0% {
+    opacity: 1; }
+  40% {
+    opacity: 0.4; }
+  90% {
+    opacity: 1; }
+  100% {
+    opacity: 1; } }
+@keyframes breathing {
+  0% {
+    opacity: 1; }
+  40% {
+    opacity: 0.4; }
+  90% {
+    opacity: 1; }
+  100% {
+    opacity: 1; } }
+.breathing {
+  -webkit-animation: breathing 3s linear infinite normal;
+  animation: breathing 3s linear infinite normal; }
