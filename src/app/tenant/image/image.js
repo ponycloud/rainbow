@@ -19,10 +19,9 @@
   ]);
 
   module.controller('ImageListCtrl', ImageListCtrl = (function() {
-    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal', '$location'];
+    ImageListCtrl.inject = ['$scope', '$rootScope', '$routeParams', 'TenantImage', 'StoragePool', 'TenantVolume', 'dataContainer', '$modal'];
 
-    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal, $location) {
-      this.$location = $location;
+    function ImageListCtrl($scope, $rootScope, $routeParams, TenantImage, StoragePool, TenantVolume, dataContainer, $modal) {
       TenantImage.list({
         'tenant': $routeParams.tenant
       }).$promise.then(function(ImageList) {
@@ -43,7 +42,6 @@
         }
         return false;
       };
-      $scope.$location = $location;
       $scope.imageModal = $modal({
         scope: $scope,
         template: 'tenant/image/image-modal.tpl.html',
@@ -246,7 +244,7 @@
             'tenant': $routeParams.tenant,
             'volume': volume.desired.uuid
           };
-          _results.push(TenantVolume["delete"](params, function() {}));
+          _results.push(TenantVolume["delete"](params));
         }
         return _results;
       };

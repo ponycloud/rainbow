@@ -36,7 +36,7 @@
         <th>Size</th>
         <td>
             <span ng-show="image.size>0">
-                {{image.size|number}} MB
+                {{image.size|megabytes}}
             </span>
             <span class="label label-danger" ng-show="image.size<=0 || !image.size">Needs to be defined</span>
         </td>
@@ -66,7 +66,8 @@
         <tbody>
           <tr ng-repeat="storagepool in storagepools">
              <td>{{storagepool.desired.name}}</a></td>
-             <td>{{(storagepool.used_space || 0)|number}} MB</td>
+             <td ng-show="storagepool.used_space > 0">{{storagepool.used_space | megabytes}}</td>
+             <td ng-show="!storagepool.used_space">Not allocated</td>
              <td>
                  <button type="button" class="btn-success btn" ng-show="!storagepool.used" ng-click="allocate(storagepool, image.size)">Allocate</button>
                  <button type="button" class="btn-danger btn" ng-show="storagepool.used" ng-click="deallocate(storagepool)">Deallocate</button>

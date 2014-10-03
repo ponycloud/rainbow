@@ -23,7 +23,7 @@
                   <tbody>
                   <tr ng-repeat="volume in backVolumes">
                     <td><a href="#/{{tenant}}/volume/{{volume.desired.uuid}}">{{volume.desired.name}}</a></td>
-                    <td>{{volume.desired.size|number}} MB</td>
+                    <td>{{volume.desired.size|megabytes}}</td>
                     <td>{{storagepools[volume.desired.storage_pool].desired.name}}</td>
                     <td><button type="button" ng-if="volume.desired.image" class="btn-danger btn" ng-click="unlink(volume)">Unlink</button></td>
                   </tr>

@@ -195,8 +195,8 @@ module.controller 'ImageDetailCtrl',
       $scope.deallocate = (storagepool) ->
         for volume in storagepool.volumes
           params = {'tenant': $routeParams.tenant, 'volume': volume.desired.uuid }
-          TenantVolume.delete(params, () ->
-          )
+          TenantVolume.delete params
+
 
       $scope.unlink = (volume) ->
         patch = JSON.stringify([
