@@ -69,16 +69,14 @@ factoryFunction = (auth, $q, $rootScope, WS_URL) ->
         @session.auth(userToken).then (permissions) =>
           for permission in permissions['pubsub']
             console.log permission
-            @session.subscribe permission.uri, @notificationCallback, ab.log
-
-
-  notificationCallback: (topic, event) ->
-    @_onNewMessage topic, event
+            @session.subscribe permission.uri, (topic, event) =>
+                @_onNewMessage topic, event
+            , ab.log
 
   unsubscribeTenant: () ->
     uri = @currentSessionSubs
     @currentSessionSubs = null
-    @session.unsubscribe uri, @notificationCallback
+    @session.unsubscribe uri
 
   isConnected: () ->
     @connected

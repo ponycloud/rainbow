@@ -101,21 +101,20 @@
               for (_i = 0, _len = _ref.length; _i < _len; _i++) {
                 permission = _ref[_i];
                 console.log(permission);
-                _results.push(_this.session.subscribe(permission.uri, _this.notificationCallback, ab.log));
+                _results.push(_this.session.subscribe(permission.uri, function(topic, event) {
+                  return _this._onNewMessage(topic, event);
+                }, ab.log));
               }
               return _results;
             });
           });
         });
       },
-      notificationCallback: function(topic, event) {
-        return this._onNewMessage(topic, event);
-      },
       unsubscribeTenant: function() {
         var uri;
         uri = this.currentSessionSubs;
         this.currentSessionSubs = null;
-        return this.session.unsubscribe(uri, this.notificationCallback);
+        return this.session.unsubscribe(uri);
       },
       isConnected: function() {
         return this.connected;
