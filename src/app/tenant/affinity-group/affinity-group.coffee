@@ -45,16 +45,12 @@ module.controller 'AffinityGroupListCtrl',
             $scope.affinityGroupListModal.hide()
           )
 
-      $scope.deleteAffinityGroup = (uuid) ->
-        params = {'tenant': $routeParams.tenant, 'affinity_group': uuid}
-        TenantAffinityGroup.delete(params, () ->
-          #$scope.message("Affinity group deleted", 'success')
-        )
-
       $scope.deleteSelected = (items) ->
+        patch = []
+        params = {'tenant': $routeParams.tenant}
         for item in items
-          $scope.deleteAffinityGroup item
-
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantAffinityGroup.patch(params, patch)
 
 module.controller 'AffinityGroupDetailCtrl',
   class AffinityGroupDetailCtrl
