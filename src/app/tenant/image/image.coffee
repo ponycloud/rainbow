@@ -79,7 +79,7 @@ module.controller 'ImageListCtrl',
       $scope.deleteSelected = (items) ->
         patch = []
         params = {'tenant': $routeParams.tenant}
-        for item in selected
+        for item in items
           patch.push({'op': 'remove', 'path': '/'+item})
         TenantImage.patch(params, patch)
 

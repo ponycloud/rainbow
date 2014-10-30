@@ -99,8 +99,8 @@
         params = {
           'tenant': $routeParams.tenant
         };
-        for (_i = 0, _len = selected.length; _i < _len; _i++) {
-          item = selected[_i];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
           patch.push({
             'op': 'remove',
             'path': '/' + item
