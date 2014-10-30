@@ -76,22 +76,12 @@ module.controller 'ImageListCtrl',
           #$scope.message("Image created", 'success')
         )
 
-      # Plain and simple delete
-      $scope.deleteImage = (uuid) ->
-        params = {'tenant': $routeParams.tenant, 'image': uuid}
-
-        TenantImage.delete(params, () ->
-          $scope.images = $scope.images.filter(
-            (item) ->
-              item.desired.uuid != uuid
-          )
-          $scope.message("Image deleted", 'success')
-        )
-
       $scope.deleteSelected = (items) ->
-        for item in items
-          $scope.deleteImage item
-
+        patch = []
+        params = {'tenant': $routeParams.tenant}
+        for item in selected
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantImage.patch(params, patch)
 
 module.controller 'ImageDetailCtrl',
   class ImageDetailCtrl

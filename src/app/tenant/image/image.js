@@ -93,27 +93,20 @@
           return _results;
         });
       };
-      $scope.deleteImage = function(uuid) {
-        var params;
-        params = {
-          'tenant': $routeParams.tenant,
-          'image': uuid
-        };
-        return TenantImage["delete"](params, function() {
-          $scope.images = $scope.images.filter(function(item) {
-            return item.desired.uuid !== uuid;
-          });
-          return $scope.message("Image deleted", 'success');
-        });
-      };
       $scope.deleteSelected = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          item = items[_i];
-          _results.push($scope.deleteImage(item));
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          'tenant': $routeParams.tenant
+        };
+        for (_i = 0, _len = selected.length; _i < _len; _i++) {
+          item = selected[_i];
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantImage.patch(params, patch);
       };
     }
 
