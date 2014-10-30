@@ -35,6 +35,7 @@ module.controller 'VolumeListCtrl',
         if !value
           $scope.volume.size = null
         else
+          $scope.volume.base_image = $scope.images[0].desired.uuid
           setDefaultVolumeSize($scope.volume.base_image)
 
       StoragePool.list().$promise.then (StoragePoolList) ->
@@ -120,17 +121,12 @@ module.controller 'VolumeListCtrl',
           #$scope.message("Volume created", 'success')
         )
 
-      # Plain and simple delete
-      $scope.deleteVolume = (uuid) ->
-        params = {'tenant': $routeParams.tenant, 'volume': uuid}
-
-        TenantVolume.delete(params, () ->
-          $scope.message("Volume deleted", 'success')
-        )
-
       $scope.deleteSelected = (items) ->
+        patch = []
+        params = {'tenant': $routeParams.tenant}
         for item in items
-          $scope.deleteVolume item
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantVolume.patch(params, patch)
 
 
 module.controller 'VolumeDetailCtrl',

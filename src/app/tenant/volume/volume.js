@@ -43,6 +43,7 @@
         if (!value) {
           return $scope.volume.size = null;
         } else {
+          $scope.volume.base_image = $scope.images[0].desired.uuid;
           return setDefaultVolumeSize($scope.volume.base_image);
         }
       });
@@ -153,24 +154,20 @@
           return $scope.close();
         });
       };
-      $scope.deleteVolume = function(uuid) {
-        var params;
-        params = {
-          'tenant': $routeParams.tenant,
-          'volume': uuid
-        };
-        return TenantVolume["delete"](params, function() {
-          return $scope.message("Volume deleted", 'success');
-        });
-      };
       $scope.deleteSelected = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          'tenant': $routeParams.tenant
+        };
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push($scope.deleteVolume(item));
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantVolume.patch(params, patch);
       };
     }
 
