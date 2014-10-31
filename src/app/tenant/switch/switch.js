@@ -53,22 +53,20 @@
           return $scope.switchListModal.hide();
         });
       };
-      $scope.deleteSwitch = function(uuid) {
-        var params;
-        params = {
-          'tenant': $routeParams.tenant,
-          'switch': uuid
-        };
-        return TenantSwitch["delete"](params, function() {});
-      };
       $scope.deleteSelected = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          tenant: $routeParams.tenant
+        };
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push($scope.deleteSwitch(item));
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantSwitch.patch(params, patch);
       };
     }
 
@@ -151,29 +149,27 @@
           'vlan_tag': $scope.network.vlan_tag
         };
         return newNetwork.$save({
-          'tenant': $routeParams.tenant,
-          'switch': $routeParams["switch"]
+          tenant: $routeParams.tenant,
+          "switch": $routeParams["switch"]
         }, function(response) {
           return $scope.networkModal.hide();
         });
       };
-      $scope.deleteNetwork = function(uuid) {
-        var params;
-        params = {
-          'tenant': $routeParams.tenant,
-          'switch': $routeParams["switch"],
-          'network': uuid
-        };
-        return TenantSwitchNetwork["delete"](params, function() {});
-      };
       $scope.deleteSelectedNetworks = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          tenant: $routeParams.tenant,
+          "switch": $routeParams["switch"]
+        };
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push($scope.deleteNetwork(item));
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantSwitchNetwork.patch(params, patch);
       };
       $scope.networkModalOpen = function() {
         $scope.networkModal.show();

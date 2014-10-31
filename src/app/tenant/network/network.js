@@ -53,24 +53,22 @@
           return $scope.routeModalClose();
         });
       };
-      $scope.deleteRoute = function(uuid) {
-        var params;
-        params = {
-          'tenant': $routeParams.tenant,
-          'switch': $routeParams["switch"],
-          'network': $routeParams.network,
-          'route': uuid
-        };
-        return TenantSwitchNetworkRoute["delete"](params, function() {});
-      };
       $scope.deleteSelectedRoutes = function(items) {
-        var item, _i, _len, _results;
-        _results = [];
+        var item, params, patch, _i, _len;
+        patch = [];
+        params = {
+          tenant: $routeParams.tenant,
+          "switch": $routeParams["switch"],
+          network: $routeParams.network
+        };
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push($scope.deleteRoute(item));
+          patch.push({
+            'op': 'remove',
+            'path': '/' + item
+          });
         }
-        return _results;
+        return TenantSwitchNetworkRoute.patch(params, patch);
       };
       $scope.routeModalOpen = function() {
         $scope.routeModal.show();

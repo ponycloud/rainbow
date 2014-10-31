@@ -37,15 +37,13 @@ module.controller 'SwitchListCtrl',
             $scope.switchListModal.hide()
           )
 
-      $scope.deleteSwitch = (uuid) ->
-        params = {'tenant': $routeParams.tenant, 'switch': uuid}
-        TenantSwitch.delete(params, () ->
-          #$scope.message("Switch deleted", 'success')
-        )
-
       $scope.deleteSelected = (items) ->
+        patch = []
+        params =
+          tenant: $routeParams.tenant
         for item in items
-          $scope.deleteSwitch item
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantSwitch.patch(params, patch)
 
 
 module.controller 'SwitchDetailCtrl',
@@ -93,18 +91,21 @@ module.controller 'SwitchDetailCtrl',
       $scope.createNetwork = () ->
         newNetwork = new TenantSwitchNetwork()
         newNetwork.desired = {'range': $scope.network.range, 'vlan_tag': $scope.network.vlan_tag}
-        newNetwork.$save({'tenant': $routeParams.tenant, 'switch': $routeParams.switch}, (response) ->
-          $scope.networkModal.hide()
-        )
+        newNetwork.$save
+          tenant: $routeParams.tenant
+          switch: $routeParams.switch
+          (response) ->
+            $scope.networkModal.hide()
 
-      $scope.deleteNetwork = (uuid) ->
-        params = {'tenant': $routeParams.tenant, 'switch': $routeParams.switch, 'network': uuid}
-        TenantSwitchNetwork.delete(params, () ->
-          #$scope.message("Network deleted", 'success')
-        )
       $scope.deleteSelectedNetworks = (items) ->
+        patch = []
+        params =
+          tenant: $routeParams.tenant
+          switch: $routeParams.switch,
         for item in items
-          $scope.deleteNetwork item
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantSwitchNetwork.patch(params, patch)
+
 
       $scope.networkModalOpen = () ->
         $scope.networkModal.show()

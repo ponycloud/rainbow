@@ -31,21 +31,17 @@ module.controller 'NetworkDetailCtrl',
           $scope.routeModalClose()
         )
 
-      $scope.deleteRoute = (uuid) ->
-        params = {
-          'tenant': $routeParams.tenant,
-          'switch': $routeParams.switch,
-          'network': $routeParams.network,
-          'route': uuid
-        }
-
-        TenantSwitchNetworkRoute.delete(params, () ->
-          #$scope.message("Network deleted", 'success')
-        )
-
       $scope.deleteSelectedRoutes = (items) ->
+        patch = []
+        params =
+          tenant: $routeParams.tenant
+          switch: $routeParams.switch,
+          network: $routeParams.network,
+
         for item in items
-          $scope.deleteRoute item
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantSwitchNetworkRoute.patch(params, patch)
+
 
       $scope.routeModalOpen = () ->
         $scope.routeModal.show()
