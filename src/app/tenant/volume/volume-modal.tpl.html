@@ -41,7 +41,6 @@
                     <div class="col-sm-6">
                       <ul class="list-unstyled">
                           <select ng-model="volume.base_image" class="form-control"
-                            ng-init="volume.base_image = images[0].desired.uuid"
                             ng-options="image.desired.uuid as image.desired.name for image in getFilteredImages(volume.storagepool)">
                           </select>
                       </ul>
@@ -53,6 +52,7 @@
                   <div class="col-sm-4">
                     <div class="input-group">
                       <input type="number" class="form-control" name="size"
+                        min="{{imageSize[volume.base_image]}}"
                         ng-model="volume.size">
                       <div class="input-group-addon">MB</div>
                     </div>
