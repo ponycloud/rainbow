@@ -24,6 +24,23 @@ module.controller 'InstanceListCtrl',
         $scope.instances = i
         dataContainer.registerEntity 'instance', $scope.instances
 
+      $scope.setStateSelected = (selected, state) ->
+          params = {'tenant': $routeParams.tenant}
+          patch = []
+          for item in selected
+            patch.push
+              op: 'x-merge'
+              path: '/'+item+'/desired/state'
+              value: state
+          TenantInstance.patch(params, patch)
+
+      $scope.deleteSelected = (items) ->
+        patch = []
+        params = {'tenant': $routeParams.tenant}
+        for item in items
+          patch.push({'op': 'remove', 'path': '/'+item})
+        TenantInstance.patch(params, patch)
+
 
 module.controller 'InstanceDetailCtrl',
   class InstanceDetailCtrl
@@ -79,11 +96,28 @@ module.controller 'InstanceDetailCtrl',
         $scope.instanceEditModal.hide()
 
       $scope.instanceEditOpen = () ->
+        $scope.instance.ns = []
+        for ns in $scope.instance.desired.ns
+          $scope.instance.ns.push {'value': ns}
+
         $scope.instanceEditModal.show()
+
+      $scope.addNameserver = () ->
+        $scope.instance.ns.push {'value':''}
+
+      $scope.removeNameserver = (ns) ->
+        $scope.instance.ns = $scope.instance.ns.filter(
+          (item) ->
+            item.$$hashKey != ns.$$hashKey
+        )
 
       $scope.instanceEditSave = () ->
           params = {'tenant': $routeParams.tenant, 'instance': $routeParams.instance}
           desired = $scope.instance.desired
+          ns = []
+          for item in $scope.instance.ns
+            ns.push item['value']
+
           patch = [{
             op: 'x-merge'
             path: '/desired'
@@ -94,6 +128,8 @@ module.controller 'InstanceDetailCtrl',
               cpu_profile: desired.cpu_profile
               boot: desired.boot
               mem: desired.mem
+              ns: ns
+              state: desired.state
           }]
           TenantInstance.patch(params, patch)
           $scope.instanceEditClose()
@@ -346,7 +382,6 @@ module.controller 'InstanceDetailCtrl',
                 for vdisk in vdisks
                   if vdisk.desired.instance == $routeParams.instance
                     $scope.vdiskDict[uuid].used_here = true
-        console.log $scope.vdiskDict
 
         # Filtering for vDisks/volumes
         $scope.volumeFilter = (actual, expected) ->
@@ -379,24 +414,110 @@ module.controller 'InstanceDetailCtrl',
 
 module.controller 'InstanceWizardCtrl',
   class InstanceWizardCtrl
-    @$inject = ['$scope', '$routeParams', 'TenantInstance', 'TenantSwitchNetwork',
-                'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch',
+    @$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantSwitchNetwork',
+                'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'Tenant',
                 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 
-                'CpuProfile', 'TenantAffinityGroup','dataContainer']
+                'CpuProfile', 'TenantAffinityGroup', 'TenantImage', 'Image', 'dataContainer']
 
-    constructor: ($scope, $routeParams, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk,
-                  TenantInstanceVnic, TenantSwitch, TenantInstanceVnicAddress, TenantVolume,
-                  StoragePool, CpuProfile, TenantAffinityGroup, dataContainer) ->
+    constructor: ($scope, $routeParams, $modal, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk,
+                  TenantInstanceVnic, TenantSwitch, Tenant, TenantInstanceVnicAddress, TenantVolume,
+                  StoragePool, CpuProfile, TenantAffinityGroup, TenantImage, Image, dataContainer) ->
 
       # Variable that should contain all information
       # about instance accross the creation wizard
-      $scope.instance = {'selectedVolumes': [], 'vdisks': [], 'vnics': [], 'boot': 'disk', 'ns': []}
+      $scope.instance =
+        uuid: '%instance_uuid%'
+        selectedVolumes: []
+        vdisks: []
+        vnics: []
+        boot: 'disk'
+        ns: [{'value': ''}]
+        state: 'running'
+
+      # List of volumes without image
+      TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then (VolumeList) ->
+        $scope.volumes = VolumeList
+        dataContainer.registerEntity 'volume', $scope.volumes
+
+        $scope.$watchCollection 'volumes', (newVals, oldVals) ->
+          $scope.filteredVolumes = $scope.volumes.filter(
+            (item) ->
+              item unless item.desired.image
+          )
+
+      $scope.$watch 'volume.base_image', (value) ->
+          setDefaultVolumeSize(value)
+
+      $scope.$watch 'volume.initialize', (value) ->
+       if !value
+          $scope.volume.size = null
+          $scope.volume.base_image = null
+        else
+          $scope.volume.base_image = $scope.images[0].desired.uuid
+          setDefaultVolumeSize($scope.volume.base_image)
+
+
+      StoragePool.list()
+      .$promise.then (items) ->
+        $scope.storagepools = items
+        dataContainer.registerEntity 'storage_pool', $scope.storagepools
+
+      Image.list().$promise.then (ImageList) ->
+        $scope.globalImages = ImageList
+        dataContainer.registerEntity 'image', $scope.images
+
+      TenantImage.list({'tenant': $routeParams.tenant}).$promise.then (ImageList) ->
+        $scope.images = ImageList
+        dataContainer.registerEntity 'image', $scope.images
+
+        $scope.$watchCollection 'images', (newVal, oldVal) ->
+          # ImageDict is a simple dict keyed by storage pools that is used
+          # for peeking in which storage pools a particular image
+          # is available.
+          unless $scope.imageDict
+            $scope.imageDict = {}
+
+          unless $scope.imageSize
+            $scope.imageSize = {}
+
+          for volume in $scope.volumes
+            for image in newVal
+              if volume.desired.image
+                unless $scope.imageDict[volume.desired.storage_pool]
+                  $scope.imageDict[volume.desired.storage_pool] = []
+                $scope.imageDict[volume.desired.storage_pool].push(volume.desired.image)
+
+                # Get the size
+                $scope.imageSize[volume.desired.image] = volume.desired.size
+
+      setDefaultVolumeSize = (image) ->
+        unless $scope.volume.size == 0
+          unless !$scope.volume.initialize
+            $scope.volume.size = $scope.imageSize[image]
+
+      $scope.addNameserver = () ->
+        $scope.instance.ns.push {'value':''}
+
+      $scope.removeNameserver = (ns) ->
+        $scope.instance.ns = $scope.instance.ns.filter(
+          (item) ->
+            item.$$hashKey != ns.$$hashKey
+        )
+
+      $scope.getFilteredImages = (storage_pool) ->
+        # TODO filter globalImages for available
+        rval = []
+        for image in $scope.images
+          if image.desired.uuid in $scope.imageDict[storage_pool]
+            rval.push image
+        return rval.concat $scope.globalImages
 
       CpuProfile.list()
-      .$promise.then (cp) ->
-        $scope.cpu_profiles = cp
-        $scope.instance.cpu_profile = cp[0].desired.uuid
+      .$promise.then (items) ->
+        $scope.cpu_profiles = items
+        $scope.instance.cpu_profile = items[0].desired.uuid
         dataContainer.registerEntity 'cpu_profile', $scope.cpu_profiles
+
       TenantSwitch.list
         tenant: $routeParams.tenant
       .$promise.then (ts) ->
@@ -404,17 +525,21 @@ module.controller 'InstanceWizardCtrl',
         $scope.instance.vnics[0].switch = ts[0].desired.uuid
         dataContainer.registerEntity 'switch', $scope.switches
 
+      $scope.wizardVdiskListModal = $modal
+        keyboard: true
+        scope: $scope
+        template: 'tenant/instance/wizard-vdisk-list-modal.tpl.html'
+        show: false
 
-      # List of volumes without image
-      TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then (VolumeList) ->
-        $scope.volumes = VolumeList
-        dataContainer.registerEntity('volume', $scope.volumes)
+      $scope.wizardVdiskListClose = () ->
+        $scope.wizardVdiskListModal.hide()
 
-        $scope.$watchCollection 'volumes', (newVals, oldVals) ->
-          $scope.filteredVolumes = $scope.volumes.filter(
-            (item) ->
-              item unless item.desired.image
-          )
+      # Iterator used for assinging placeholders
+      # for volumes which are created in-place
+      $scope.volumeIterator = 0
+      $scope.wizardVdiskListOpen = () ->
+        $scope.volume = {}
+        $scope.wizardVdiskListModal.show()
 
       # List of affinity groups
       TenantAffinityGroup.list
@@ -434,13 +559,9 @@ module.controller 'InstanceWizardCtrl',
         defSwitch = null
         if $scope.switches
           defSwitch = $scope.switches[0].desired.uuid
-        c = $scope.instance.vnics.push {'switch': defSwitch, 'network': null, 'addresses': []}
+        c = $scope.instance.vnics.push {'switch': defSwitch, 'addresses': []}
         $scope.$watch 'instance.vnics['+(c-1)+'].switch', (value) ->
           $scope.renewNetworks value, c-1
-
-        $scope.$watch 'instance.vnics['+(c-1)+'].network', (value) ->
-          $scope.renewAddresses value, c-1
-
 
       # Add first vNIC
       $scope.addVnic()
@@ -461,8 +582,8 @@ module.controller 'InstanceWizardCtrl',
 
         $scope.instance.vnics[k].addresses.push
           'desired':
-            'ip': '',
-            'ptr':'',
+            'ip': null,
+            'ptr': null,
             'network': networkUUID
 
       $scope.removeAddress = (address, vnic) ->
@@ -484,13 +605,26 @@ module.controller 'InstanceWizardCtrl',
           $scope.renewAddresses networks[0].desired.uuid,index
         )
 
+      $scope.appendVolume = (desired) ->
+        volume =
+          desired: desired
+          current: {}
+        volume.desired.state = 'present'
+        volume.to_create = true
+
+        $scope.volumeIterator++
+        volume.desired.uuid = '%volume-'+$scope.volumeIterator+'_uuid%'
+
+        $scope.assignVolume volume
+        $scope.wizardVdiskListClose()
+
       $scope.assignVolume = (volume) ->
         volume.selected = true
 
         $scope.instance['vdisks'].push
           'desired':
             'volume': volume.desired.uuid,
-            'instance': '%instance_uuid%',
+            'instance': $scope.instance.uuid,
             'index': $scope.instance['vdisks'].length+1
           'volume': volume
 
@@ -504,4 +638,64 @@ module.controller 'InstanceWizardCtrl',
           (item) ->
             item.volume.desired.uuid != volume.desired.uuid
           )
+
+      $scope.createInstance = () ->
+        params = {'tenant': $routeParams.tenant}
+
+        patch = []
+        volumes = {}
+        vdisks = {}
+        for vdisk in $scope.instance.vdisks
+          if vdisk.volume.to_create
+            volumes[vdisk.volume.desired.uuid] =
+                desired: vdisk.volume.desired
+
+          vdisks[vdisk.$$hashKey] =
+            desired: vdisk.desired
+
+        vnics = {}
+        for vnic in $scope.instance.vnics
+          addresses = {}
+          for address in vnic.addresses
+            addresses[address.$$hashKey] =
+              desired: address.desired
+
+          vnics[vnic.$$hashKey] =
+            desired:
+              switch: vnic.switch
+              index: vnic.index
+              uuid: vnic.$$hashKey
+            children:
+              address: addresses
+
+        instancePatch =
+          op: 'x-merge'
+          path: '/'
+          value:
+            children:
+              instance: {}
+              volume: volumes
+
+        ns = []
+        for item in $scope.instance.ns
+          ns.push item.value
+        console.log ns
+
+        instancePatch['value']['children']['instance'][$scope.instance.uuid] =
+          desired:
+            name:  $scope.instance.name
+            vcpu:  $scope.instance.vcpu
+            rcpu:  $scope.instance.rcpu
+            mem:   $scope.instance.mem
+            boot:  $scope.instance.boot
+            state: $scope.instance.state
+            ns:    ["10.0.1.1"]
+            cpu_profile: $scope.instance.cpu_profile
+          children:
+            vdisk: vdisks
+            vnic: vnics
+
+        patch.push instancePatch
+
+        Tenant.patch(params, patch)
 
