@@ -189,7 +189,9 @@
         tenant: $routeParams.tenant,
         instance: $routeParams.instance
       }).$promise.then(function(vnics) {
-        $scope.vnics = vnics;
+        $scope.vnics = vnics.sort(function(a, b) {
+          return a.desired.index - b.desired.index;
+        });
         return dataContainer.registerEntity('vnic', $scope.vnics);
       });
       $scope.vnicIps = TenantInstanceVnic.get({
@@ -395,7 +397,9 @@
         'tenant': $routeParams.tenant,
         'instance': $routeParams.instance
       }).$promise.then(function(vdisks) {
-        $scope.vdisks = vdisks;
+        $scope.vdisks = vdisks.sort(function(a, b) {
+          return a.desired.index - b.desired.index;
+        });
         dataContainer.registerEntity('vdisk', $scope.vdisks);
         return $scope.$watchCollection('vdisks', function(newVals, oldVals) {
           var item, _i, _len, _results;
@@ -668,7 +672,7 @@
         tenant: $routeParams.tenant
       }).$promise.then(function(ts) {
         $scope.switches = ts;
-        $scope.instance.vnics[0]["switch"] = ts[0].desired.uuid;
+        $scope.instance.vnics[0].desired["switch"] = ts[0].desired.uuid;
         return dataContainer.registerEntity('switch', $scope.switches);
       });
       $scope.wizardVdiskListModal = $modal({
@@ -684,6 +688,20 @@
       $scope.wizardVdiskListOpen = function() {
         $scope.volume = {};
         return $scope.wizardVdiskListModal.show();
+      };
+      $scope.sortVdisks = {
+        stop: function(e, ui) {
+          var i, vdisk, vdisks, _i, _len, _ref;
+          i = 0;
+          vdisks = [];
+          _ref = $scope.instance.vdisks;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            vdisk = _ref[_i];
+            vdisk.desired.index = i++;
+            vdisks.push(vdisk);
+          }
+          return $scope.instance.vdisks = vdisks;
+        }
       };
       TenantAffinityGroup.list({
         tenant: $routeParams.tenant
@@ -703,32 +721,49 @@
           defSwitch = $scope.switches[0].desired.uuid;
         }
         c = $scope.instance.vnics.push({
-          'switch': defSwitch,
-          'addresses': []
+          desired: {
+            "switch": defSwitch,
+            addresses: [],
+            index: $scope.instance.vnics.length
+          }
         });
-        return $scope.$watch('instance.vnics[' + (c - 1) + '].switch', function(value) {
+        return $scope.$watch('instance.vnics[' + (c - 1) + '].desired.switch', function(value) {
           return $scope.renewNetworks(value, c - 1);
         });
       };
       $scope.addVnic();
+      $scope.sortVnics = {
+        stop: function(e, ui) {
+          var i, vnic, vnics, _i, _len, _ref;
+          i = 0;
+          vnics = [];
+          _ref = $scope.instance.vnics;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            vnic = _ref[_i];
+            vnic.desired.index = i++;
+            vnics.push(vnic);
+          }
+          return $scope.instance.vnics = vnics;
+        }
+      };
       $scope.finishedWizard = function() {
         return console.log("Dokonceno!");
       };
       $scope.renewAddresses = function(networkUUID, index) {
         var address, _i, _len, _ref;
-        _ref = $scope.instance.vnics[index].addresses;
+        _ref = $scope.instance.vnics[index].desired.addresses;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           address = _ref[_i];
           address.desired.network = networkUUID;
         }
-        if ($scope.instance.vnics[index].addresses.length === 0) {
+        if ($scope.instance.vnics[index].desired.addresses.length === 0) {
           return $scope.addAddress(networkUUID, $scope.instance.vnics[index]);
         }
       };
       $scope.addAddress = function(networkUUID, vnic) {
         var k;
         k = jQuery.inArray(vnic, $scope.instance.vnics);
-        return $scope.instance.vnics[k].addresses.push({
+        return $scope.instance.vnics[k].desired.addresses.push({
           'desired': {
             'ip': null,
             'ptr': null,
@@ -739,7 +774,7 @@
       $scope.removeAddress = function(address, vnic) {
         var k;
         k = jQuery.inArray(vnic, $scope.instance.vnics);
-        return $scope.instance.vnics[k].addresses = $scope.instance.vnics[k].addresses.filter(function(item) {
+        return $scope.instance.vnics[k].desired.addresses = $scope.instance.vnics[k].desired.addresses.filter(function(item) {
           return item.$$hashKey !== address.$$hashKey;
         });
       };
@@ -768,12 +803,12 @@
       $scope.assignVolume = function(volume) {
         volume.selected = true;
         return $scope.instance['vdisks'].push({
-          'desired': {
-            'volume': volume.desired.uuid,
-            'instance': $scope.instance.uuid,
-            'index': $scope.instance['vdisks'].length + 1
+          desired: {
+            volume: volume.desired.uuid,
+            instance: $scope.instance.uuid,
+            index: $scope.instance['vdisks'].length + 1
           },
-          'volume': volume
+          volume: volume
         });
       };
       $scope.unassignVolume = function(volume) {
@@ -814,7 +849,7 @@
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           vnic = _ref1[_j];
           addresses = {};
-          _ref2 = vnic.addresses;
+          _ref2 = vnic.desired.addresses;
           for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
             address = _ref2[_k];
             addresses[address.$$hashKey] = {
@@ -823,8 +858,8 @@
           }
           vnics[vnic.$$hashKey] = {
             desired: {
-              "switch": vnic["switch"],
-              index: vnic.index,
+              "switch": vnic.desired["switch"],
+              index: vnic.desired.index,
               uuid: vnic.$$hashKey
             },
             children: {

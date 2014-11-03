@@ -59,9 +59,6 @@
           </button>
         </li>
 
-        <li class="pull-right">
-          <input class="form-control" ng-model="searchvnics" placeholder="Filter">
-        </li>
 
         <li class="pull-right">
             <pc-multieditbutton ></pc-multieditbutton>
@@ -73,11 +70,11 @@
         <thead>
           <tr>
             <th pc-multiall />
-            <th colspan="2" pc-column="desired.macaddr:true:false">MAC address</th>
+            <th colspan="2">MAC address</th>
           </tr>
         </thead>
         <tbody ng-model="vnics" ui-sortable="sortVnics">
-          <tr ng-repeat="vnic in getFiltered(vnics)">
+          <tr ng-repeat="vnic in vnics">
             <td pc-multicheck="{{ vnic.desired.uuid }}"/>
             <td>{{vnic.desired.macaddr}}</td>
             <td>
@@ -114,9 +111,6 @@
         </li>
 
         <li class="pull-right">
-            <input class="form-control" ng-model="searchvdisks" placeholder="Filter">
-        </li>
-        <li class="pull-right">
             <pc-multieditbutton ></pc-multieditbutton>
         </li>
       </ul>
@@ -125,12 +119,12 @@
         <thead>
         <tr>
           <th pc-multiall />
-          <th pc-column="desired.volume">Volume</th>
-          <th pc-column="desired.volume">Size</th>
+          <th>Volume</th>
+          <th>Size</th>
         </tr>
         </thead>
         <tbody ui-sortable="sortVdisks" ng-model="vdisks">
-         <tr ng-repeat="vdisk in getFiltered(vdisks)">
+         <tr ng-repeat="vdisk in vdisks">
             <td pc-multicheck="{{ vdisk.desired.uuid }}"/>
             <td>{{volumeDict[vdisk.desired.volume].desired.name}}</td>
             <td>{{volumeDict[vdisk.desired.volume].desired.size|megabytes}}</td>

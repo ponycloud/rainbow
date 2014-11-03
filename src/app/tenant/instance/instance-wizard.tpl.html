@@ -2,7 +2,7 @@
   <wz-step title="Name, CPU & RAM">
     <h1>Basic parameters</h1>
 
-    <div class="col-md-7 col-md-offset-2 well">
+    <div class="col-md-8 col-md-offset-1 well">
       <div class="form-group col-md-10">
         <label for="name">Name</label>
         <input type="text" id="name" class="form-control" ng-model="instance.name">
@@ -37,7 +37,7 @@
         </select>
       </div>
 
-      <div class="form-group col-md-12">
+      <div class="form-group col-md-10">
         <label for="mem">RAM size</label>
         <div class="btn-group">
           <label class="btn btn-default" ng-class="{active: instance.mem=='1024'}">
@@ -55,7 +55,7 @@
           <label class="btn btn-default" ng-class="{active: instance.mem=='16384'}">
             <input type="radio" ng-model="instance.mem" class="hidden" value="16384">16GB
           </label>
-          <div class="form-group col-md-4">
+          <div class="form-group col-md-4 col-sm-6 col-xs-6">
             <div class="input-group">
                 <input type="text" class="form-control" ng-model="instance.mem" placeholder="Other">
                 <div class="input-group-addon">MB</div>
@@ -72,7 +72,7 @@
           </div>
 
           <div class="form-group col-md-1 col-xs-1">
-            <button class="btn btn-sm btn-danger" ng-click="removeNameserver(ns)">
+            <button class="btn btn-sm btn-danger" ng-show="instance.ns.length > 1" ng-click="removeNameserver(ns)">
               <i class="glyphicon glyphicon-minus"></i>
             </button>
           </div>
@@ -144,22 +144,17 @@
     </div>
     <div class="col-md-6 col-md-offset-1 well">
       <h2>vDisks</h2>
-    <ul class="nav nav-pills">
-      <li class="pull-right">
-          <input class="form-control" ng-model="searchvdisks" placeholder="Filter">
-      </li>
-    </ul>
 
     <table class="table table-striped table-responsive table-hover" pc-table="{{searchvdisks}}">
       <thead>
         <tr>
-          <th pc-column="volume.desired.name">Name</th>
-          <th pc-column="volume.desired.state">State</th>
-          <th pc-column="volume.desired.size">Size</th>
+          <th>Name</th>
+          <th>State</th>
+          <th>Size</th>
         </tr>
       </thead>
-      <tbody ui-sortable ng-model="instance.vdisks">
-        <tr ng-repeat="vdisk in getFiltered(instance.vdisks)">
+      <tbody ui-sortable="sortVdisks" ng-model="instance.vdisks">
+        <tr ng-repeat="vdisk in instance.vdisks">
           <td>{{vdisk.volume.desired.name}}</td>
           <td>{{vdisk.volume.desired.state}}</td>
           <td>{{vdisk.volume.desired.size|megabytes}}</td>
@@ -197,7 +192,7 @@
       </div>
     </div>
 
-    <div ui-sortable ng-model="instance.vnics" class="col-md-8">
+    <div ui-sortable="sortVnics" ng-model="instance.vnics" class="col-md-10">
       <div ng-repeat="vnic in instance.vnics" class="col-md-12 well buffer">
         <div class="col-md-12">
         <h2>Link layer</h2>
@@ -207,18 +202,18 @@
           </div>
           <div class="form-group col-sm-6">
             <label for="switch">Switch</label>
-            <select id="switch" class="form-control" ng-model="vnic.switch" ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
+            <select id="switch" class="form-control" ng-model="vnic.desired.switch" ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
           </div>
 
         </div>
 
         <div class="col-md-12">
           <h3>Internet layer</h3>
-          <div class="alert alert-info" ng-if="!vnic.addresses.length">
+          <div class="alert alert-info" ng-if="!vnic.desired.addresses.length">
             Add some IP addreses.
           </div>
 
-          <div ng-repeat="address in vnic.addresses">
+          <div ng-repeat="address in vnic.desired.addresses">
 
               <div class="form-group col-md-5">
                   <label for="network" class="col-sm-4">Network</label>

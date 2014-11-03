@@ -149,7 +149,7 @@ module.controller 'InstanceDetailCtrl',
         tenant: $routeParams.tenant
         instance: $routeParams.instance
       .$promise.then (vnics) ->
-        $scope.vnics = vnics
+        $scope.vnics = vnics.sort( (a, b) -> a.desired.index - b.desired.index )
         dataContainer.registerEntity 'vnic', $scope.vnics
 
       $scope.vnicIps = TenantInstanceVnic.get
@@ -317,7 +317,7 @@ module.controller 'InstanceDetailCtrl',
 
       TenantInstanceVdisk.list {'tenant': $routeParams.tenant, 'instance': $routeParams.instance}
       .$promise.then (vdisks) ->
-        $scope.vdisks = vdisks
+        $scope.vdisks = vdisks.sort( (a,b) -> a.desired.index - b.desired.index )
         dataContainer.registerEntity 'vdisk', $scope.vdisks
 
         $scope.$watchCollection 'vdisks', (newVals, oldVals) ->
@@ -522,7 +522,7 @@ module.controller 'InstanceWizardCtrl',
         tenant: $routeParams.tenant
       .$promise.then (ts) ->
         $scope.switches = ts
-        $scope.instance.vnics[0].switch = ts[0].desired.uuid
+        $scope.instance.vnics[0].desired.switch = ts[0].desired.uuid
         dataContainer.registerEntity 'switch', $scope.switches
 
       $scope.wizardVdiskListModal = $modal
@@ -540,6 +540,18 @@ module.controller 'InstanceWizardCtrl',
       $scope.wizardVdiskListOpen = () ->
         $scope.volume = {}
         $scope.wizardVdiskListModal.show()
+
+      # Update index of vDisks when resorted
+      $scope.sortVdisks = {
+        stop: (e, ui) ->
+          i = 0
+          vdisks = []
+
+          for vdisk in $scope.instance.vdisks
+            vdisk.desired.index = i++
+            vdisks.push vdisk
+          $scope.instance.vdisks = vdisks
+      }
 
       # List of affinity groups
       TenantAffinityGroup.list
@@ -559,28 +571,46 @@ module.controller 'InstanceWizardCtrl',
         defSwitch = null
         if $scope.switches
           defSwitch = $scope.switches[0].desired.uuid
-        c = $scope.instance.vnics.push {'switch': defSwitch, 'addresses': []}
-        $scope.$watch 'instance.vnics['+(c-1)+'].switch', (value) ->
+        c = $scope.instance.vnics.push
+          desired:
+            switch: defSwitch
+            addresses: []
+            index: $scope.instance.vnics.length
+
+        $scope.$watch 'instance.vnics['+(c-1)+'].desired.switch', (value) ->
           $scope.renewNetworks value, c-1
 
       # Add first vNIC
       $scope.addVnic()
 
+      # Update index of vDisks when resorted
+      $scope.sortVnics = {
+        stop: (e, ui) ->
+          i = 0
+          vnics = []
+
+          for vnic in $scope.instance.vnics
+            vnic.desired.index = i++
+            vnics.push vnic
+          $scope.instance.vnics = vnics
+      }
+
+
       $scope.finishedWizard = () ->
         console.log "Dokonceno!"
 
       $scope.renewAddresses = (networkUUID, index) ->
-        for address in $scope.instance.vnics[index].addresses
+        for address in $scope.instance.vnics[index].desired.addresses
           address.desired.network = networkUUID
 
         # Add one address if there is none
-        if $scope.instance.vnics[index].addresses.length == 0
+        if $scope.instance.vnics[index].desired.addresses.length == 0
           $scope.addAddress networkUUID, $scope.instance.vnics[index]
 
       $scope.addAddress = (networkUUID, vnic) ->
         k = jQuery.inArray(vnic, $scope.instance.vnics)
 
-        $scope.instance.vnics[k].addresses.push
+        $scope.instance.vnics[k].desired.addresses.push
           'desired':
             'ip': null,
             'ptr': null,
@@ -589,7 +619,7 @@ module.controller 'InstanceWizardCtrl',
       $scope.removeAddress = (address, vnic) ->
         k = jQuery.inArray(vnic, $scope.instance.vnics)
 
-        $scope.instance.vnics[k].addresses = $scope.instance.vnics[k].addresses.filter(
+        $scope.instance.vnics[k].desired.addresses = $scope.instance.vnics[k].desired.addresses.filter(
           (item) ->
             item.$$hashKey != address.$$hashKey
         )
@@ -602,7 +632,7 @@ module.controller 'InstanceWizardCtrl',
         .$promise.then((networks) ->
           $scope.instance.vnics[index].networks = networks
           # Remove old mappings
-          $scope.renewAddresses networks[0].desired.uuid,index
+          $scope.renewAddresses networks[0].desired.uuid, index
         )
 
       $scope.appendVolume = (desired) ->
@@ -622,11 +652,11 @@ module.controller 'InstanceWizardCtrl',
         volume.selected = true
 
         $scope.instance['vdisks'].push
-          'desired':
-            'volume': volume.desired.uuid,
-            'instance': $scope.instance.uuid,
-            'index': $scope.instance['vdisks'].length+1
-          'volume': volume
+          desired:
+            volume: volume.desired.uuid,
+            instance: $scope.instance.uuid,
+            index: $scope.instance['vdisks'].length+1
+          volume: volume
 
       $scope.unassignVolume = (volume) ->
         # Uncheck volume
@@ -656,14 +686,14 @@ module.controller 'InstanceWizardCtrl',
         vnics = {}
         for vnic in $scope.instance.vnics
           addresses = {}
-          for address in vnic.addresses
+          for address in vnic.desired.addresses
             addresses[address.$$hashKey] =
               desired: address.desired
 
           vnics[vnic.$$hashKey] =
             desired:
-              switch: vnic.switch
-              index: vnic.index
+              switch: vnic.desired.switch
+              index: vnic.desired.index
               uuid: vnic.$$hashKey
             children:
               address: addresses
