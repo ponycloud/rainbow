@@ -848,7 +848,6 @@
           item = _ref3[_l];
           ns.push(item.value);
         }
-        console.log(ns);
         instancePatch['value']['children']['instance'][$scope.instance.uuid] = {
           desired: {
             name: $scope.instance.name,
@@ -857,7 +856,7 @@
             mem: $scope.instance.mem,
             boot: $scope.instance.boot,
             state: $scope.instance.state,
-            ns: ["10.0.1.1"],
+            ns: ns,
             cpu_profile: $scope.instance.cpu_profile
           },
           children: {

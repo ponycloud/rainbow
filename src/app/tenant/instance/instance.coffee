@@ -679,7 +679,6 @@ module.controller 'InstanceWizardCtrl',
         ns = []
         for item in $scope.instance.ns
           ns.push item.value
-        console.log ns
 
         instancePatch['value']['children']['instance'][$scope.instance.uuid] =
           desired:
@@ -689,7 +688,7 @@ module.controller 'InstanceWizardCtrl',
             mem:   $scope.instance.mem
             boot:  $scope.instance.boot
             state: $scope.instance.state
-            ns:    ["10.0.1.1"]
+            ns:    ns
             cpu_profile: $scope.instance.cpu_profile
           children:
             vdisk: vdisks
