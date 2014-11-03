@@ -63,7 +63,7 @@ Example:
       controller: function($scope) {
         $scope.filterFields = [];
         $scope.sortFields = {};
-        $scope.currentSort = 'desired.index';
+        $scope.currentSort = 'desired.name';
         $scope.reverse = false;
         $scope.getFiltered = function(data) {
           var filtered, sortFn, sorted;
