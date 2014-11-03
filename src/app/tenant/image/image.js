@@ -245,11 +245,8 @@
         var params, patch;
         patch = JSON.stringify([
           {
-            'op': 'x-merge',
-            'path': '/desired',
-            'value': {
-              'image': null
-            }
+            'op': 'remove',
+            'path': '/desired/image'
           }
         ]);
         params = {

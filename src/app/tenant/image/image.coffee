@@ -190,9 +190,7 @@ module.controller 'ImageDetailCtrl',
 
       $scope.unlink = (volume) ->
         patch = JSON.stringify([
-          {'op': 'x-merge', 'path': '/desired', 'value': {
-            'image': null
-          } }
+          {'op': 'remove', 'path': '/desired/image'}
         ])
 
         params = {'tenant': $routeParams.tenant, 'volume': volume.desired.uuid}
