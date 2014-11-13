@@ -29,7 +29,7 @@ module.controller 'AffinityGroupListCtrl',
 
       $scope.open = (affinityGroup) ->
         $scope.affinityGroupListModal.show()
-        $scope.affinityGroup = {}
+        $scope.affinityGroup = {'type': 'affinity'}
 
       $scope.close = () ->
         $scope.closeMsg = 'I was closed at: ' + new Date()

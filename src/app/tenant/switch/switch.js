@@ -35,7 +35,9 @@
       });
       $scope.open = function() {
         $scope.switchListModal.show();
-        return $scope["switch"] = {};
+        return $scope["switch"] = {
+          type: 'bridge'
+        };
       };
       $scope.close = function() {
         return $scope.switchListModal.hide();

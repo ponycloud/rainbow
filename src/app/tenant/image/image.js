@@ -49,7 +49,8 @@
       });
       $scope.open = function() {
         $scope.image = {
-          'storagepools': {}
+          'storagepools': {},
+          'type': 'disk'
         };
         return $scope.imageModal.show();
       };

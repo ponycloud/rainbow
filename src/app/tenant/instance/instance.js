@@ -237,12 +237,12 @@
       $scope.createVnic = function() {
         $scope.vnicEditModal.show();
         $scope.vnic = {
-          'desired': {
-            'macaddr': null,
-            'switch': null,
-            'index': null
+          desired: {
+            macaddr: null,
+            "switch": null,
+            index: null
           },
-          'addresses': []
+          addresses: []
         };
         return initializeVnicModal();
       };
@@ -266,11 +266,11 @@
           networkUUID = $scope.vnic.networks[0].desired.uuid;
         }
         return $scope.vnic.addresses.push({
-          'desired': {
-            'ip': '',
-            'ptr': '',
-            'network': networkUUID,
-            'vnic': $scope.vnic.desired.uuid
+          desired: {
+            ip: '',
+            ptr: '',
+            network: networkUUID,
+            vnic: $scope.vnic.desired.uuid
           }
         });
       };
@@ -358,9 +358,9 @@
               'op': 'x-merge',
               'path': '/' + address.desired.uuid + '/desired',
               'value': {
-                'ip': address.desired.ip,
-                'ptr': address.desired.ptr,
-                'network': address.desired.network
+                ip: address.desired.ip,
+                ptr: address.desired.ptr,
+                network: address.desired.network
               }
             });
           } else {
@@ -515,8 +515,8 @@
         var newVdisk;
         newVdisk = new TenantInstanceVdisk();
         newVdisk.desired = {
-          'volume': volume.desired.uuid,
-          'name': volume.desired.name
+          volume: volume.desired.uuid,
+          name: volume.desired.name
         };
         return newVdisk.$save({
           'tenant': $routeParams.tenant,
@@ -546,9 +546,9 @@
   })());
 
   module.controller('InstanceWizardCtrl', InstanceWizardCtrl = (function() {
-    InstanceWizardCtrl.$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantSwitchNetwork', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'Tenant', 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 'CpuProfile', 'TenantAffinityGroup', 'TenantImage', 'Image', 'dataContainer'];
+    InstanceWizardCtrl.$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantSwitchNetwork', 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'Tenant', 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 'Switch', 'SwitchNetwork', 'CpuProfile', 'TenantAffinityGroup', 'TenantImage', 'Image', 'dataContainer', 'WizardHandler'];
 
-    function InstanceWizardCtrl($scope, $routeParams, $modal, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk, TenantInstanceVnic, TenantSwitch, Tenant, TenantInstanceVnicAddress, TenantVolume, StoragePool, CpuProfile, TenantAffinityGroup, TenantImage, Image, dataContainer) {
+    function InstanceWizardCtrl($scope, $routeParams, $modal, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk, TenantInstanceVnic, TenantSwitch, Tenant, TenantInstanceVnicAddress, TenantVolume, StoragePool, Switch, SwitchNetwork, CpuProfile, TenantAffinityGroup, TenantImage, Image, dataContainer, WizardHandler) {
       var setDefaultVolumeSize;
       $scope.instance = {
         uuid: '%instance_uuid%',
@@ -651,6 +651,9 @@
           return item.$$hashKey !== ns.$$hashKey;
         });
       };
+      $scope.nextStep = function() {
+        return WizardHandler.wizard().next();
+      };
       $scope.getFilteredImages = function(storage_pool) {
         var image, rval, _i, _len, _ref, _ref1;
         rval = [];
@@ -670,9 +673,11 @@
       });
       TenantSwitch.list({
         tenant: $routeParams.tenant
-      }).$promise.then(function(ts) {
-        $scope.switches = ts;
-        $scope.instance.vnics[0].desired["switch"] = ts[0].desired.uuid;
+      }).$promise.then(function(switches) {
+        $scope.switches = switches;
+        Switch.list().$promise.then(function(publicSwitches) {
+          return $scope.switches = $scope.switches.concat(publicSwitches);
+        });
         return dataContainer.registerEntity('switch', $scope.switches);
       });
       $scope.wizardVdiskListModal = $modal({
@@ -764,10 +769,10 @@
         var k;
         k = jQuery.inArray(vnic, $scope.instance.vnics);
         return $scope.instance.vnics[k].desired.addresses.push({
-          'desired': {
-            'ip': null,
-            'ptr': null,
-            'network': networkUUID
+          desired: {
+            ip: null,
+            ptr: null,
+            network: networkUUID
           }
         });
       };
@@ -783,6 +788,12 @@
           tenant: $routeParams.tenant,
           "switch": switchUUID
         }).$promise.then(function(networks) {
+          console.log(networks);
+          SwitchNetwork.list({
+            "switch": switchUUID
+          }).$promise.then(function(publicNetworks) {
+            return networks.concat(publicNetworks);
+          });
           $scope.instance.vnics[index].networks = networks;
           return $scope.renewAddresses(networks[0].desired.uuid, index);
         });

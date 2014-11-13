@@ -1,7 +1,7 @@
 <div class="modal" close="close()" options="opts">
     <div class="modal-dialog">
         <div class="modal-content">
-          <form role="form" class="form-horizontal" ng-submit="createVolume()">
+          <form role="form" class="form-horizontal" ng-submit="createVolume()" novalidate name="volumeForm">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
               <h3 id="myModalLabel">Create volume</h3>
@@ -10,7 +10,7 @@
                 <div class="form-group">
                     <label class="col-sm-2">Name:</label>
                     <div class="col-sm-6">
-                        <input type="text" name="name" ng-model="volume.name" class="form-control">
+                        <input type="text" name="name" ng-model="volume.name" class="form-control" required>
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@
                     <div class="input-group">
                       <input type="number" class="form-control" name="size"
                         min="{{imageSize[volume.base_image]}}"
-                        ng-model="volume.size">
+                        ng-model="volume.size" required>
                       <div class="input-group-addon">MB</div>
                     </div>
                   </div>
@@ -62,7 +62,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
-              <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+              <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" ng-disabled="volumeForm.$invalid">Save</button>
             </div>
           </form>
       </div>

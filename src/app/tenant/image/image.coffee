@@ -40,7 +40,7 @@ module.controller 'ImageListCtrl',
       $scope.imageModal = $modal({scope: $scope, template: 'tenant/image/image-modal.tpl.html', show: false})
 
       $scope.open = () ->
-        $scope.image = {'storagepools': {}}
+        $scope.image = {'storagepools': {}, 'type': 'disk'}
         $scope.imageModal.show()
 
       $scope.close = () ->

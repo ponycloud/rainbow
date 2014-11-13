@@ -24,7 +24,8 @@ module.controller 'SwitchListCtrl',
 
       $scope.open = () ->
         $scope.switchListModal.show()
-        $scope.switch = {}
+        $scope.switch =
+          type: 'bridge'
 
       $scope.close = () ->
         $scope.switchListModal.hide()

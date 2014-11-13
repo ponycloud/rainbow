@@ -1,7 +1,7 @@
 <div class="modal" close="wizardVdiskListClose()" options="opts">
     <div class="modal-dialog">
         <div class="modal-content">
-          <form role="form" class="form-horizontal" ng-submit="appendVolume(volume)">
+          <form novalidate role="form" class="form-horizontal" name="vdisk" ng-submit="appendVolume(volume)">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="wizardVdiskListClose()">×</button>
               <h3 id="myModalLabel">Create vDisk</h3>
@@ -10,7 +10,7 @@
                 <div class="form-group">
                     <label class="col-sm-2">Name:</label>
                     <div class="col-sm-6">
-                        <input type="text" name="name" ng-model="volume.name" class="form-control">
+                        <input type="text" name="name" ng-model="volume.name" class="form-control" required>
                     </div>
                 </div>
 
@@ -51,8 +51,8 @@
                   <label class="col-sm-2">Size:</label>
                   <div class="col-sm-4">
                     <div class="input-group">
-                      <input type="number" class="form-control" min="{{imageSize[volume.base_image]}}" name="size"
-                        ng-model="volume.size">
+                      <input type="number" class="form-control" min="{{imageSize[volume.base_image] || 0}}" name="size"
+                        ng-model="volume.size" required>
                       <div class="input-group-addon">MB</div>
                     </div>
                   </div>
@@ -61,7 +61,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="wizardVdiskListClose()">Close</button>
-              <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+              <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" ng-disabled="vdisk.$invalid">Save</button>
             </div>
           </form>
       </div>

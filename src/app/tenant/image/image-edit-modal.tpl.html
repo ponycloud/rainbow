@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-              <form class="form-horizontal" ng-submit="editImage()">
+              <form class="form-horizontal" ng-submit="editImage()" novalidate name="imageForm">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ng-click="close()">×</button>
                   <h3 id="myModalLabel">Modify image</h3>
@@ -11,7 +11,7 @@
                     <div class="form-group">
                       <label class="col-sm-2">Name:</label>
                       <div class="col-sm-10">
-                        <input type="text" class="form-control" name="name" ng-model="image.desired.name">
+                        <input type="text" class="form-control" name="name" ng-model="image.desired.name" required>
                       </div>
                     </div>
 
@@ -48,7 +48,7 @@
                       <label class="col-sm-2">Size:</label>
                       <div class="col-sm-4">
                         <div class="input-group">
-                          <input type="number" class="form-control" name="size" ng-model="image.size">
+                          <input type="number" class="form-control" name="size" ng-model="image.size" required>
                           <div class="input-group-addon">MB</div>
                         </div>
                         <span class="help-line label label-warning" ng-show="image.size">This should not be changed unless you know exactly what it does</span>
@@ -58,7 +58,7 @@
 
                     <div class="modal-footer">
                       <button type="button" class="btn" data-dismiss="modal" aria-hidden="true" ng-click="close()">Close</button>
-                      <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+                      <button type="submit" class="btn btn-primary" data-dismiss="modal" aria-hidden="true" ng-disabled="imageForm.$invalid">Save</button>
                     </div>
                   </form>
             </div>

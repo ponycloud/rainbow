@@ -39,7 +39,9 @@
       };
       $scope.open = function(affinityGroup) {
         $scope.affinityGroupListModal.show();
-        return $scope.affinityGroup = {};
+        return $scope.affinityGroup = {
+          'type': 'affinity'
+        };
       };
       $scope.close = function() {
         $scope.closeMsg = 'I was closed at: ' + new Date();
