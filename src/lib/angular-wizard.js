@@ -118,6 +118,32 @@ angular.module('mgo-angular-wizard').directive('wizard', function() {
                 return _.indexOf($scope.steps , $scope.selectedStep) + 1;
             }
 
+            this.setCompleted = function(step, value) {
+                var stepTo;
+                if (_.isNumber(step)) {
+                    stepTo = $scope.steps[step];
+                } else {
+                    stepTo = _.findWhere($scope.steps, {title: step});
+                }
+
+              stepTo.completed = value;
+            }
+
+            this.isCompleted = function(step){
+                var stepTo;
+                if (_.isNumber(step)) {
+                    stepTo = $scope.steps[step];
+                } else {
+                    stepTo = _.findWhere($scope.steps, {title: step});
+                }
+
+              if(typeof stepTo.completed === 'undefined'){
+                return false;
+              } else {
+                return stepTo.completed;
+              }
+            }
+
             function unselectAll() {
                 _.each($scope.steps, function (step) {
                     step.selected = false;
