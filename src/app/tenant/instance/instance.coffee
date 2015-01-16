@@ -314,8 +314,9 @@ module.controller 'InstanceDetailCtrl',
 
 
       # vDisks
-
-      TenantInstanceVdisk.list {'tenant': $routeParams.tenant, 'instance': $routeParams.instance}
+      TenantInstanceVdisk.list
+        tenant: $routeParams.tenant
+        instance: $routeParams.instance
       .$promise.then (vdisks) ->
         $scope.vdisks = vdisks.sort( (a,b) -> a.desired.index - b.desired.index )
         dataContainer.registerEntity 'vdisk', $scope.vdisks
@@ -325,7 +326,8 @@ module.controller 'InstanceDetailCtrl',
             if jQuery.inArray(item, oldVals) < 0 or newVals.length != oldVals.length
               refreshVdiskDict($scope.filteredVolumes)
 
-      TenantVolume.list {'tenant': $routeParams.tenant}
+      TenantVolume.list
+        tenant: $routeParams.tenant
       .$promise.then (VolumeList) ->
         $scope.volumes = VolumeList
         dataContainer.registerEntity 'volume', $scope.volumes
@@ -373,7 +375,9 @@ module.controller 'InstanceDetailCtrl',
         for volume in volumes
           uuid = volume.desired.uuid
           do (uuid) ->
-            TenantVolumeVdisk.list {'tenant': $routeParams.tenant, 'volume': uuid}
+            TenantVolumeVdisk.list
+              tenant: $routeParams.tenant
+              volume: uuid
             .$promise.then (vdisks) ->
               $scope.vdiskDict[uuid] =
                 vdisks: vdisks
@@ -414,25 +418,29 @@ module.controller 'InstanceDetailCtrl',
 
 module.controller 'InstanceWizardCtrl',
   class InstanceWizardCtrl
-    @$inject = ['$scope', '$routeParams', '$modal', 'TenantInstance', 'TenantSwitchNetwork',
+    @$inject = ['$scope', '$routeParams', '$modal', '$location', 'TenantInstance', 'TenantSwitchNetwork',
                 'TenantInstanceVdisk', 'TenantInstanceVnic', 'TenantSwitch', 'Tenant',
                 'TenantInstanceVnicAddress', 'TenantVolume', 'StoragePool', 'Switch', 'SwitchNetwork',
                 'CpuProfile', 'TenantAffinityGroup', 'TenantImage', 'Image', 'dataContainer', 'WizardHandler']
 
-    constructor: ($scope, $routeParams, $modal, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk,
+    constructor: ($scope, $routeParams, $modal, $location, TenantInstance, TenantSwitchNetwork, TenantInstanceVdisk,
                   TenantInstanceVnic, TenantSwitch, Tenant, TenantInstanceVnicAddress, TenantVolume,
                   StoragePool, Switch, SwitchNetwork, CpuProfile, TenantAffinityGroup, TenantImage, Image, dataContainer, WizardHandler) ->
+
 
       # Variable that should contain all information
       # about instance accross the creation wizard
       $scope.instance =
-        uuid: '%instance_uuid%'
+        uuid: 'instance_uuid'
         selectedVolumes: []
         vdisks: []
         vnics: []
         boot: 'disk'
         ns: [{'value': ''}]
         state: 'running'
+      # This should contain information about
+      # volume for vdisk being created
+      $scope.volume = {}
 
       # List of volumes without image
       TenantVolume.list({'tenant': $routeParams.tenant}).$promise.then (VolumeList) ->
@@ -446,7 +454,7 @@ module.controller 'InstanceWizardCtrl',
           )
 
       $scope.$watch 'volume.base_image', (value) ->
-          setDefaultVolumeSize(value)
+        setDefaultVolumeSize(value)
 
       $scope.$watch 'volume.initialize', (value) ->
        if !value
@@ -492,7 +500,7 @@ module.controller 'InstanceWizardCtrl',
 
       setDefaultVolumeSize = (image) ->
         unless $scope.volume.size == 0
-          unless !$scope.volume.initialize
+          if $scope.volume.initialize
             $scope.volume.size = $scope.imageSize[image]
 
       $scope.addNameserver = () ->
@@ -504,8 +512,12 @@ module.controller 'InstanceWizardCtrl',
             item.$$hashKey != ns.$$hashKey
         )
 
-      $scope.nextStep = () ->
+      $scope.setCompleted = (step, completed) ->
+        WizardHandler.wizard().setCompleted(step, completed)
         WizardHandler.wizard().next()
+
+      $scope.isCompleted = (step) ->
+        WizardHandler.wizard().isCompleted(step)
 
       $scope.getFilteredImages = (storage_pool) ->
         # TODO filter globalImages for available
@@ -531,9 +543,19 @@ module.controller 'InstanceWizardCtrl',
         Switch.list()
           .$promise.then (publicSwitches) ->
             $scope.switches = $scope.switches.concat publicSwitches
-
-
+        # Listen to coming events (changes in switches)
         dataContainer.registerEntity 'switch', $scope.switches
+
+      # Lookup function, returns switch item based on it's uuid
+      lookupSwitch = (switchUUID) ->
+        for switchItem in $scope.switches
+          if switchUUID == switchItem.desired.uuid
+            return switchItem
+
+      # Determine if switch belongs to 
+      $scope.getSwitchType = (item) ->
+          return 'Public' unless item.desired.tenant
+          return 'Private'
 
       $scope.wizardVdiskListModal = $modal
         keyboard: true
@@ -590,9 +612,6 @@ module.controller 'InstanceWizardCtrl',
         $scope.$watch 'instance.vnics['+(c-1)+'].desired.switch', (value) ->
           $scope.renewNetworks value, c-1
 
-      # Add first vNIC
-      $scope.addVnic()
-
       # Update index of vDisks when resorted
       $scope.sortVnics = {
         stop: (e, ui) ->
@@ -636,20 +655,22 @@ module.controller 'InstanceWizardCtrl',
 
 
       $scope.renewNetworks = (switchUUID, index) ->
-        TenantSwitchNetwork.list
-          tenant: $routeParams.tenant
-          switch: switchUUID
-        .$promise.then (networks) ->
-          console.log networks
-
+        switchItem = lookupSwitch switchUUID
+        if switchItem.desired.tenant
+          TenantSwitchNetwork.list
+            tenant: $routeParams.tenant
+            switch: switchItem.desired.uuid
+          .$promise.then (networks) ->
+            $scope.instance.vnics[index].networks = networks
+            # Remove old mappings
+            $scope.renewAddresses networks[0].desired.uuid, index
+        else
           SwitchNetwork.list
-            switch: switchUUID
-          .$promise.then (publicNetworks) ->
-            networks.concat publicNetworks
-
-          $scope.instance.vnics[index].networks = networks
-          # Remove old mappings
-          $scope.renewAddresses networks[0].desired.uuid, index
+            switch: switchItem.desired.uuid
+          .$promise.then (networks) ->
+            $scope.instance.vnics[index].networks = networks
+            # Remove old mappings
+            $scope.renewAddresses networks[0].desired.uuid, index
 
       $scope.appendVolume = (desired) ->
         volume =
@@ -742,5 +763,7 @@ module.controller 'InstanceWizardCtrl',
 
         patch.push instancePatch
 
-        Tenant.patch(params, patch)
+        Tenant.patch(params, patch, (response) ->
+          $location.path $routeParams.tenant + '/instance/' + response.uuids.instance_uuid
+        )
 

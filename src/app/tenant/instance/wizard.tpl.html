@@ -6,7 +6,6 @@
                      'completed': step.completed && !step.selected, 
                      'active-completed': step.selected && step.completed}" 
                       ng-repeat="step in steps">
-
           <div class="nav-wedge"></div>
           <a ng-click="goTo(step)">{{step.title || step.wzTitle}}</a>
           <div class="nav-arrow"></div>

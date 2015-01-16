@@ -1,8 +1,14 @@
 <wizard on-finish="createInstance()" template="tenant/instance/wizard.tpl.html">
   <wz-step title="Name, CPU & RAM">
     <h1>Basic parameters</h1>
-    <form name="basic" novalidate>
-      <div class="col-md-8 col-md-offset-1 well">
+    <div class="col-md-offset-6 pull-right">
+      <input type="button" class="btn btn-primary" value="Continue" ng-click="setCompleted(0, basicForm.$valid)"  ng-disabled="basicForm.$invalid" />
+      <input type="button" class="btn btn-success" value="Create instance" ng-click="createInstance()"  ng-disabled="basicForm.$invalid" />
+    </div>
+
+
+    <form name="basicForm" novalidate>
+      <div class="col-md-8 well">
         <div class="form-group col-md-10">
           <label for="name">Name</label>
           <input type="text" id="name" class="form-control" ng-model="instance.name" required>
@@ -104,7 +110,6 @@
 
       </div>
 
-      <input type="button" class="btn btn-lg btn-primary pull-right" value="Continue" ng-click="nextStep()" ng-disabled="basic.$invalid" />
 
     </form>
   </wz-step>
@@ -113,6 +118,12 @@
         <h1>Storage</h1>
     <div class="form-group">
       <input type="submit" class="btn btn-primary" ng-click="wizardVdiskListOpen()" value="Create new vDisk" />
+
+      <div class="pull-right">
+        <input type="button" class="btn btn-primary" value="Continue" ng-disabled="!isCompleted(0)" ng-click="setCompleted(1, true)" />
+        <input type="button" class="btn btn-success" value="Create instance" ng-click="createInstance()" ng-disabled="!isCompleted(0)"/>
+      </div>
+
     </div>
 
     <h2>Add existing volumes</h2>
@@ -171,10 +182,6 @@
 
     </div>
 
-  <div class="form-group col-md-11">
-    <input type="submit" wz-next class="btn btn-lg btn-primary pull-right" value="Continue" />
-  </div>
-
   </wz-step>
 
   <wz-step title="Network">
@@ -183,6 +190,10 @@
       <button class="btn btn-primary" ng-click="addVnic()">
         Add vNIC
       </button>
+      <div class="pull-right">
+        <input type="button" class="btn btn-success" value="Create instance" ng-click="createInstance()" ng-disabled="!isCompleted(0)"/>
+      </div>
+
     </div>
 
     <h3>vNICs</h3>
@@ -202,7 +213,7 @@
           </div>
           <div class="form-group col-sm-6">
             <label for="switch">Switch</label>
-            <select id="switch" class="form-control" ng-model="vnic.desired.switch" ng-options="switch.desired.uuid as switch.desired.name for switch in switches"></select>
+            <select id="switch" class="form-control" ng-model="vnic.desired.switch" ng-options="switch.desired.uuid as switch.desired.name group by getSwitchType(switch) for switch in switches"></select>
           </div>
 
         </div>
@@ -250,14 +261,6 @@
           </button>
         </div>
       </div>
-    </div>
-
-    <div class="form-group col-md-11">
-      <input type="submit" class="btn btn-lg btn-primary pull-right" ng-click="createInstance()" value="Create instance" />
-    </div>
-
-    <div class="form-group col-md-11">
-      <input type="submit" wz-next class="btn btn-lg btn-primary pull-right" value="Continue" />
     </div>
   </wz-step>
 </form>
