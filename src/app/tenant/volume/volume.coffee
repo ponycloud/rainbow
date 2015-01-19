@@ -33,7 +33,8 @@ module.controller 'VolumeListCtrl',
 
       $scope.$watch 'volume.initialize', (value) ->
         if !value
-          $scope.volume.size = null
+          if $scope.volume
+            $scope.volume.size = null
         else
           $scope.volume.base_image = $scope.images[0].desired.uuid
           setDefaultVolumeSize($scope.volume.base_image)
@@ -71,8 +72,9 @@ module.controller 'VolumeListCtrl',
                 $scope.imageSize[volume.desired.image] = volume.desired.size
 
       setDefaultVolumeSize = (image) ->
-        unless $scope.volume.size == 0
-          $scope.volume.size = $scope.imageSize[image]
+        if $scope.volume
+          unless $scope.volume.size == 0
+            $scope.volume.size = $scope.imageSize[image]
 
       $scope.getFilteredImages = (storage_pool) ->
         # TODO filter globalImages for available
@@ -136,14 +138,16 @@ module.controller 'VolumeDetailCtrl',
        'TenantVolumeVdisk', 'TenantInstance', 'dataContainer', '$modal']
 
     constructor: ($scope, $routeParams, TenantVolume, TenantVolumeVdisk, TenantInstance, dataContainer, $modal, $route) ->
-      criteria = {'tenant': $routeParams.tenant, 'volume': $routeParams.volume}
-
-      TenantVolume.get criteria
+      TenantVolume.get 
+        tenant: $routeParams.tenant
+        volume: $routeParams.volume
       .$promise.then (volume) ->
         $scope.volume = volume
         dataContainer.registerResource $scope.volume, $scope.volume.desired.uuid
 
-      TenantVolumeVdisk.list {'tenant': $routeParams.tenant, 'volume': $routeParams.volume}
+      TenantVolumeVdisk.list 
+        tenant: $routeParams.tenant
+        volume: $routeParams.volume
       .$promise.then (vdisks) ->
         $scope.vdisks = vdisks
         dataContainer.registerEntity 'vdisk', $scope.vdisks
@@ -155,7 +159,8 @@ module.controller 'VolumeDetailCtrl',
           )
         , true
 
-      TenantInstance.list {'tenant': $routeParams.tenant}
+      TenantInstance.list
+        tenant: $routeParams.tenant
       .$promise.then (instances) ->
         $scope.instances = instances
         dataContainer.registerEntity 'instance', $scope.instance

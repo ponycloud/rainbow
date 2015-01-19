@@ -117,8 +117,6 @@ module.controller 'ImageDetailCtrl',
       )
 
       $scope.$watch 'backVolumes', (value) ->
-        console.log 'Refreshing volumes'
-        console.log $scope.backVolumes
         $scope.refreshVolumes()
       , true
 
