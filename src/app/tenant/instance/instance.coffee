@@ -436,7 +436,7 @@ module.controller 'InstanceWizardCtrl',
         vdisks: []
         vnics: []
         boot: 'disk'
-        ns: [{'value': ''}]
+        ns: []
         state: 'running'
       # This should contain information about
       # volume for vdisk being created
@@ -552,7 +552,7 @@ module.controller 'InstanceWizardCtrl',
           if switchUUID == switchItem.desired.uuid
             return switchItem
 
-      # Determine if switch belongs to 
+      # Determine if switch is private or public
       $scope.getSwitchType = (item) ->
           return 'Public' unless item.desired.tenant
           return 'Private'
@@ -626,7 +626,7 @@ module.controller 'InstanceWizardCtrl',
 
 
       $scope.finishedWizard = () ->
-        console.log "Dokonceno!"
+        $scope.createInstance()
 
       $scope.renewAddresses = (networkUUID, index) ->
         for address in $scope.instance.vnics[index].desired.addresses
