@@ -157,6 +157,7 @@ a[ng-click] {
 [ui-sortable] {
   cursor: move; }
 
+/* Breathing animation */
 @-webkit-keyframes breathing {
   0% {
     opacity: 1; }
@@ -178,3 +179,8 @@ a[ng-click] {
 .breathing {
   -webkit-animation: breathing 3s linear infinite normal;
   animation: breathing 3s linear infinite normal; }
+
+/* Validation styles */
+input.ng-invalid {
+  border-color: #D9534F;
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset, 0px 0px 6px #EBA5A3; }
