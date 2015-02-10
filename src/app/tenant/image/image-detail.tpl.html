@@ -69,7 +69,7 @@
              <td ng-show="storagepool.used_space > 0">{{storagepool.used_space | megabytes}}</td>
              <td ng-show="!storagepool.used_space">Not allocated</td>
              <td>
-                 <button type="button" class="btn-success btn" ng-show="!storagepool.used" ng-click="allocate(storagepool, image.size)">Allocate</button>
+                 <button type="button" class="btn-success btn" ng-show="!storagepool.used" ng-click="allocate(storagepool, image.size)" ng-disabled="!image.size">Allocate</button>
                  <button type="button" class="btn-danger btn" ng-show="storagepool.used" ng-click="deallocate(storagepool)">Deallocate</button>
              </td>
           </tr>
